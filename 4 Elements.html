@@ -563,6 +563,8 @@
                         // Mark valid selection options
                         markValidSelections('caster-card-type');
 
+                        // TODO : nerf ranking higher than neophyte (proficient 1/2, adept 1/3, elite 1/4, peerless 1/5)
+
                     } else {
 
                         resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
@@ -812,8 +814,6 @@
                     supportBuild = 'placeholder',
                     supportDesc,
                     supportEfficacy;
-
-                 console.log("Type: "+supportType);
 
                  // TEMP : To be detemined by specific card   
                  supportEfficacy = Math.floor(Math.random()*(100-25+1)+25); // 25 -> 69 = neophyte, 70 -> 79 = proficient, 80 -> 89 = adept, 90 -> 99 = elite, 100 = peerless
@@ -1250,7 +1250,7 @@
 
                 // call dialogue box
                 toggleDialogueBox(false,true);
-/*
+
                 setTimeout(function(){ // auto dismiss after delay
 
                     // is the turn selection phase still active?
@@ -1263,7 +1263,7 @@
                     }
 
                 },2000);
-*/
+
             }
 
             // Dismiss invalid Draw Notice
@@ -1378,7 +1378,7 @@
 
                 iterationDelay = 200;
 
-                // get co-ordinates and dimensions of the ddead pile
+                // get co-ordinates and dimensions of the dead pile
                 var deadPile = jQuery(playerHand).find('.dead-pile');
                     deadPileOffset = jQuery(deadPile).offset(),
                     deadPileTop = deadPileOffset.top,
@@ -1581,50 +1581,69 @@
                             // Prompt hand confirmation
                             if(jQuery(playerHand).find('.card-aperture.open').length <= 0 && stackCount >= 1) {
 
-                                // Check for valid caster type cards
-                                if(jQuery(playerHand).find('.caster-card-type').length) { // valid caster type found
+                                setTimeout(function(){
 
-                                    setTimeout(function(){
+                                    // Check for valid caster type cards
+                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
 
-                                        drawPhase = false; // end draw phase
+                                        setTimeout(function(){
 
-                                        // Confirm hand or discard all to draw again
-                                        handConfirmation(playerHand);
+                                            drawPhase = false; // end draw phase
 
-                                    }, 800);
+                                            // Confirm hand or discard all to draw again
+                                            handConfirmation(playerHand);
 
-                                // Validate hand after draw
-                                } else if(jQuery(playerHand).find('.card-aperture.open').length <= 0 && jQuery(playerHand).find('.caster-card-type').length <= 0) { // valid caster type not found
+                                        }, 200);
 
-                                    setTimeout(function(){
+                                    // Validate hand after draw
+                                    } else { // no valid caster type found
 
-                                        drawPhase = false; // end draw phase
+                                        setTimeout(function(){
 
-                                        // Notify player beforing discarding hand and redrawing
-                                        invalidDraw(playerHand);
+                                            drawPhase = false; // end draw phase
 
-                                    }, 800);
+                                            // Notify player beforing discarding hand and redrawing
+                                            invalidDraw(playerHand);
 
-                                }
+                                        }, 200);
+
+                                    }
+
+                                }, 1000);                                
 
                             } else if(stackCount <= 1) {
 
-                                drawPhase = false; // end draw phase
-                                casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
-                                currentPhase = 'casterSelectionPhase';
+                                setTimeout(function(){
 
-                                // Update phase indicator
-                                updatePhaseIndicator();
+                                    // Check for valid caster type cards
+                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
 
-                                // Update and display phase guide
-                                guideInstruction = 'Place a valid caster card in play';
-                                updatePhaseGuide(guideInstruction,currentPhase);
+                                        drawPhase = false; // end draw phase
+                                        casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+                                        currentPhase = 'casterSelectionPhase';
 
-                                // Unmark valid selection options
-                                unmarkValidSelections();
+                                        // Update phase indicator
+                                        updatePhaseIndicator();
 
-                                // Mark valid selection options
-                                markValidSelections('caster-card-type');
+                                        // Update and display phase guide
+                                        guideInstruction = 'Place a valid caster card in play';
+                                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                                        // Unmark valid selection options
+                                        unmarkValidSelections();
+
+                                        // Mark valid selection options
+                                        markValidSelections('caster-card-type');
+
+                                    // Validate hand after draw
+                                    } else { // no valid caster type found
+
+                                        // TODO : player loses game if no valid caster card is found and there are no more cards to draw
+                                        console.log('game loss');
+
+                                    }
+
+                                }, 1000); 
 
                             }
 
@@ -5173,6 +5192,7 @@
             }
             .minimized-dialogueBox .dialogueBox-backdrop {
                 opacity: 0;
+                top: auto;
             }
             .turn-result {
                 text-align: center;
