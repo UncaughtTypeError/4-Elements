@@ -373,6 +373,9 @@
             // Call/Dismiss Dialogue Box
             function toggleDialogueBox(windowControl,allowKeyDismissal) {
 
+                // Remove dialogue box note
+                jQuery('.dialogueBox-note').remove();
+
                 if (jQuery('.dialogueBox').hasClass('active-dialogueBox')) { // hide the dialogue box
 
                     jQuery('.dialogueBox').toggleClass('active-dialogueBox inactive-dialogueBox');
@@ -434,11 +437,40 @@
             // Minimize/Maximize Dialogue Box
             function toggleDockDialogueBox() {
 
+                // Remove dialogue box note
+                jQuery('.dialogueBox-note').remove();
+
+                var dialogueBoxOffset,
+                    dialogueBoxTop,
+                    dialogueBoxLeft;
+
+                if(!jQuery('.dialogueBox-note').length) {
+
+                    var dialogueBoxNote = '<div class="dialogueBox-note"><span></span><i class="fas fa-info-circle"></i></div>';
+
+                    jQuery('.dialogueBox').prepend(dialogueBoxNote);
+
+                }
+
                 if (jQuery('.dialogueBox').hasClass('maximized-dialogueBox')) { // dock the dialogue box
 
                     jQuery('.dialogueBox').removeClass('maximized-dialogueBox').addClass('minimized-dialogueBox');
                     jQuery('.dialogueBox-maximize').show();
                     jQuery('.dialogueBox-minimize').hide();
+
+                    // Allow time for dialogue box to dock before displaying note
+                    setTimeout(function(){
+
+                        // Retrieve co-ordinates and dimensions of docked dialogue box
+                        dialogueBoxOffset = jQuery('.dialogueBox-component').offset(),
+                        dialogueBoxTop = dialogueBoxOffset.top,
+                        dialogueBoxLeft = dialogueBoxOffset.left;
+
+                        jQuery('.dialogueBox-note').css({'top':dialogueBoxTop,'left':dialogueBoxLeft});
+
+                        jQuery('.dialogueBox-note').addClass('dialogueBox-note-active');
+
+                    },500);
 
                     // Current phase progression condition
                     switch (currentPhase) {
@@ -446,6 +478,9 @@
                             confirmHandPhase = false;
                             browseHandPhase = true;
                             currentPhase = 'browseHandPhase';
+
+                            // Set dialogue box note
+                            jQuery('.dialogueBox-note span').text('Maximise: Accept Hand / Reject Hand');
 
                             // Update phase indicator
                             updatePhaseIndicator();
@@ -461,12 +496,29 @@
                     jQuery('.dialogueBox-minimize').show();
                     jQuery('.dialogueBox-maximize').hide();
 
+                    // Allow time for dialogue box to dock before displaying note
+                    setTimeout(function(){
+
+                        // Retrieve co-ordinates and dimensions of docked dialogue box
+                        dialogueBoxOffset = jQuery('.dialogueBox-component').offset(),
+                        dialogueBoxTop = dialogueBoxOffset.top,
+                        dialogueBoxLeft = dialogueBoxOffset.left;
+
+                        jQuery('.dialogueBox-note').css({'top':dialogueBoxTop,'left':dialogueBoxLeft});
+
+                        jQuery('.dialogueBox-note').addClass('dialogueBox-note-active');
+                        
+                    },500);
+
                     // Current phase progression condition
                     switch (currentPhase) {
                         case 'browseHandPhase' :
                             browseHandPhase = false;
                             confirmHandPhase = true;
                             currentPhase = 'confirmHandPhase';
+
+                            // Default dialogue box note
+                            jQuery('.dialogueBox-note span').text('Minimize: Browse Hand');
 
                             // Update phase indicator
                             updatePhaseIndicator();
@@ -476,6 +528,9 @@
                             previewSelectionPhase = false;
                             confirmHandPhase = true;
                             currentPhase = 'confirmHandPhase';
+
+                            // Default dialogue box note
+                            jQuery('.dialogueBox-note span').text('Minimize: Browse Hand');
 
                             // Dismiss preview pane
                             if(jQuery(previewPane).hasClass('inView')) {
@@ -5193,6 +5248,34 @@
             .minimized-dialogueBox .dialogueBox-backdrop {
                 opacity: 0;
                 top: auto;
+            }
+            .dialogueBox-note {
+                height: 0;
+                width: 0;
+                transition: .2s;
+                background: #404040;
+                color: white;
+                position: fixed;
+                margin-left: 25px;
+                margin-top: -35px;
+                padding: 0;
+                overflow: hidden;
+                border-radius: 10px;
+                border-bottom-left-radius: 0;
+                line-height: 20px;
+                font-size: 13px;
+                z-index: 9;
+            }
+            .dialogueBox-note-active {
+                height: 30px;
+                width: 270px;
+                padding: 5px 10px;
+            }
+            .dialogueBox-note .fas {
+                position: absolute;
+                right: 5px;
+                font-size: 20px;
+                line-height: 20px;
             }
             .turn-result {
                 text-align: center;
