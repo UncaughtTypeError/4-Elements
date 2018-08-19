@@ -16,7 +16,9 @@
                     <div class="overview-player-win">0</div>
                     <div class="npc-player-win">0</div>
                 </div>
-                <div class="overview-current-phase"></div>
+                <div class="overview-phase-indicator">
+                    <div class="overview-current-phase overview-display-phase"></div>
+                </div>
             </div>
             <div class="turnCard-component">
                 <div class="turnCard-bg-lines"><div><div></div></div></div>
@@ -81,21 +83,25 @@
                             <i class="fas fa-burn"></i>
                             <div class="resource-aperture"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
+                            <div class="resource-added-value"></div>
                         </div>
                         <div class="resource resource-terra">
                             <i class="fas fa-leaf"></i>
                             <div class="resource-aperture"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
+                            <div class="resource-added-value"></div>
                         </div>
                         <div class="resource resource-aero">
                             <i class="fas fa-cloud"></i>
                             <div class="resource-aperture"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
+                            <div class="resource-added-value"></div>
                         </div>
                         <div class="resource resource-hydro">
                             <i class="fas fa-tint"></i>
                             <div class="resource-aperture"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
+                            <div class="resource-added-value"></div>
                         </div>
                     </div>
                     <div class="battle-field" data-battle-field="player-field">
@@ -148,21 +154,25 @@
                     </div>
                     <div class="resource-field-component" data-resource-field="ai-field">
                         <div class="resource resource-hydro">
+                            <div class="resource-added-value"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
                             <div class="resource-aperture"></div>
                             <i class="fas fa-tint"></i>
                         </div>
                         <div class="resource resource-aero">
+                            <div class="resource-added-value"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
                             <div class="resource-aperture"></div>
                             <i class="fas fa-cloud"></i>
                         </div>
                         <div class="resource resource-terra">
+                            <div class="resource-added-value"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
                             <div class="resource-aperture"></div>
                             <i class="fas fa-leaf"></i>
                         </div>
                         <div class="resource resource-pyro">
+                            <div class="resource-added-value"></div>
                             <div class="resource-counter" data-pool-wealth="0">0</div>
                             <div class="resource-aperture"></div>
                             <i class="fas fa-burn"></i>
@@ -214,24 +224,24 @@
             */
 
             // Phases
-            var currentPhase            = 'turnSelectPhase',    // define the current phase for reference sake
-                turnSelectPhase         = true,                 // determine turn order
-                drawPhase               = false,                // draw cards for hand
-                casterSelectionPhase    = false,                // select caster card and place into active play
-                resourcePoolPhase       = false,                // add to resource pool to accrue spending points for support cards and levelling
-                baseSwitchingPhase      = false,                // switch elemental base type if possible (pyro, hydro, terra, aero)
-                supportSelectionPhase   = false,                // select support card and place into active play
-                levellingPhase          = false,                // caster level up if possible (proficient, adept, elite, peerless)
-                confirmHandPhase        = false,                // prompt player to confirm or discard drawn hand
-                confirmCasterPhase      = false,                // prompt player to confirm or reject caster selection
-                confirmResourcePhase    = false,                // prompt player to confirm or reject resource selection
-                browseHandPhase         = false,                // allow player to browse hand
-                previewSelectionPhase   = false,                // allow player to preview card
+            var currentPhase                = 'turnSelectionPhase', // define the current phase for reference sake
+                turnSelectionPhase          = true,                 // determine turn order
+                drawPhase                   = false,                // draw cards for hand
+                casterSelectionPhase        = false,                // select caster card and place into active play
+                resourcePoolingPhase        = false,                // add to resource pool to accrue spending points for support cards and levelling
+                baseSwitchingPhase          = false,                // switch elemental base type if possible (pyro, hydro, terra, aero)
+                supportSelectionPhase       = false,                // select support card and place into active play
+                levellingPhase              = false,                // caster level up if possible (proficient, adept, elite, peerless)
+                handConfirmationPhase       = false,                // prompt player to confirm or discard drawn hand
+                casterConfirmationPhase     = false,                // prompt player to confirm or reject caster selection
+                resourceConfirmationPhase   = false,                // prompt player to confirm or reject resource selection
+                handBrowsingPhase           = false,                // allow player to browse hand
+                previewSelectionPhase       = false,                // allow player to preview card
             // Notices
-                invalidDrawNotice       = false,                // notify player of invalid draw (where no caster type cards are found)
-                phaseGuideNotice        = false,                // notify player of current phase and provide instruction
+                invalidDrawNotice           = false,                // notify player of invalid draw (where no caster type cards are found)
+                phaseGuideNotice            = false,                // notify player of current phase and provide instruction
             // Other
-                activeDialogueBox       = false;                // indicate an active dialogue box
+                activeDialogueBox           = false;                // indicate an active dialogue box
 
             /*
             **
@@ -285,7 +295,7 @@
             var guideInstruction;
 
             // Phase guide update
-            function updatePhaseGuide(guideInstruction,instancePhase) {
+            function updatePhaseGuide(guideInstruction,phaseInstance) {
 
                 if(!phaseGuideNotice) {
 
@@ -311,7 +321,7 @@
 
                     setTimeout(function(){
 
-                        if(instancePhase == currentPhase) { // check if current phase is still the same phase at instance of initialisation
+                        if(phaseInstance == currentPhase) { // check if current phase is still the same phase at instance of initialisation
 
                             // Separate string by every capital letter
                             let currentPhaseIndicator = currentPhase.split(/(?=[A-Z])/);
@@ -350,8 +360,16 @@
                 // Separate string by every capital letter
                 let currentPhaseIndicator = currentPhase.split(/(?=[A-Z])/);
 
+                // Switch current phase
+                jQuery('.overview-display-phase').clone().addClass('overview-conceal-phase').appendTo('.overview-phase-indicator');
+                jQuery('.overview-current-phase').not('.overview-conceal-phase').removeClass('overview-display-phase').addClass('overview-former-phase');
+                jQuery('.overview-conceal-phase').html(currentPhaseIndicator.join(' '));
+
                 // Set current phase
-                jQuery('.overview-current-phase').html(currentPhaseIndicator.join(' '));
+                setTimeout(function(){
+                    jQuery('.overview-conceal-phase').removeClass('overview-conceal-phase').addClass('overview-display-phase');
+                    jQuery('.overview-former-phase').remove();
+                },200);
 
             }
 
@@ -379,7 +397,10 @@
                 if (jQuery('.dialogueBox').hasClass('active-dialogueBox')) { // hide the dialogue box
 
                     jQuery('.dialogueBox').toggleClass('active-dialogueBox inactive-dialogueBox');
-                    jQuery('.dialogueBox').removeClass('minimized-dialogueBox maximized-dialogueBox');
+                    setTimeout(function(){
+                        jQuery('.dialogueBox').removeClass('minimized-dialogueBox maximized-dialogueBox');
+                        jQuery('.dialogueBox-minimize, .dialogueBox-maximize').hide();
+                    },200);
 
                     activeDialogueBox = false; // define the dialogue box state
                     dialogueBoxContent = null; // reset the dialogue box content storage variable
@@ -392,7 +413,7 @@
                     },500);
 
                     // run callback function based on the current phase
-                    if (turnSelectPhase) {
+                    if (turnSelectionPhase) {
                         endTurnSelectPhase();
                     } else if (invalidDrawNotice) {
                         dismissInvalidDrawNotice(); // dismiss invalid draw notice
@@ -434,15 +455,33 @@
 
             }
 
+            function displayDialogueBoxNote() {
+
+                var dialogueBoxOffset,
+                    dialogueBoxTop,
+                    dialogueBoxLeft;
+
+                // Allow time for dialogue box to dock before displaying note
+                setTimeout(function(){
+
+                    // Retrieve co-ordinates and dimensions of docked dialogue box
+                    dialogueBoxOffset = jQuery('.dialogueBox-component').offset(),
+                    dialogueBoxTop = dialogueBoxOffset.top - jQuery(window).scrollTop(),
+                    dialogueBoxLeft = dialogueBoxOffset.left;
+
+                    jQuery('.dialogueBox-note').css({'top':dialogueBoxTop,'left':dialogueBoxLeft});
+
+                    jQuery('.dialogueBox-note').addClass('dialogueBox-note-active');
+
+                },500);
+
+            }
+
             // Minimize/Maximize Dialogue Box
             function toggleDockDialogueBox() {
 
                 // Remove dialogue box note
                 jQuery('.dialogueBox-note').remove();
-
-                var dialogueBoxOffset,
-                    dialogueBoxTop,
-                    dialogueBoxLeft;
 
                 if(!jQuery('.dialogueBox-note').length) {
 
@@ -458,26 +497,19 @@
                     jQuery('.dialogueBox-maximize').show();
                     jQuery('.dialogueBox-minimize').hide();
 
-                    // Allow time for dialogue box to dock before displaying note
-                    setTimeout(function(){
-
-                        // Retrieve co-ordinates and dimensions of docked dialogue box
-                        dialogueBoxOffset = jQuery('.dialogueBox-component').offset(),
-                        dialogueBoxTop = dialogueBoxOffset.top,
-                        dialogueBoxLeft = dialogueBoxOffset.left;
-
-                        jQuery('.dialogueBox-note').css({'top':dialogueBoxTop,'left':dialogueBoxLeft});
-
-                        jQuery('.dialogueBox-note').addClass('dialogueBox-note-active');
-
-                    },500);
+                    // Position and display dialogue box note
+                    displayDialogueBoxNote();
 
                     // Current phase progression condition
                     switch (currentPhase) {
-                        case 'confirmHandPhase' :
-                            confirmHandPhase = false;
-                            browseHandPhase = true;
-                            currentPhase = 'browseHandPhase';
+                        case 'handConfirmationPhase' :
+                            handConfirmationPhase = false;
+                            handBrowsingPhase = true;
+                            currentPhase = 'handBrowsingPhase';
+
+                            // Update and display phase guide
+                            guideInstruction = 'Browse hand and preview cards.<br><small>Placing a valid caster card into play will approve the draw.</small>';
+                            updatePhaseGuide(guideInstruction,currentPhase);
 
                             // Set dialogue box note
                             jQuery('.dialogueBox-note span').text('Maximise: Accept Hand / Reject Hand');
@@ -496,26 +528,15 @@
                     jQuery('.dialogueBox-minimize').show();
                     jQuery('.dialogueBox-maximize').hide();
 
-                    // Allow time for dialogue box to dock before displaying note
-                    setTimeout(function(){
-
-                        // Retrieve co-ordinates and dimensions of docked dialogue box
-                        dialogueBoxOffset = jQuery('.dialogueBox-component').offset(),
-                        dialogueBoxTop = dialogueBoxOffset.top,
-                        dialogueBoxLeft = dialogueBoxOffset.left;
-
-                        jQuery('.dialogueBox-note').css({'top':dialogueBoxTop,'left':dialogueBoxLeft});
-
-                        jQuery('.dialogueBox-note').addClass('dialogueBox-note-active');
-                        
-                    },500);
+                    // Position and display dialogue box note
+                    displayDialogueBoxNote();
 
                     // Current phase progression condition
                     switch (currentPhase) {
-                        case 'browseHandPhase' :
-                            browseHandPhase = false;
-                            confirmHandPhase = true;
-                            currentPhase = 'confirmHandPhase';
+                        case 'handBrowsingPhase' :
+                            handBrowsingPhase = false;
+                            handConfirmationPhase = true;
+                            currentPhase = 'handConfirmationPhase';
 
                             // Default dialogue box note
                             jQuery('.dialogueBox-note span').text('Minimize: Browse Hand');
@@ -526,8 +547,8 @@
                         break;
                         case 'previewSelectionPhase' :
                             previewSelectionPhase = false;
-                            confirmHandPhase = true;
-                            currentPhase = 'confirmHandPhase';
+                            handConfirmationPhase = true;
+                            currentPhase = 'handConfirmationPhase';
 
                             // Default dialogue box note
                             jQuery('.dialogueBox-note span').text('Minimize: Browse Hand');
@@ -590,12 +611,12 @@
             // dismiss with mouse
             jQuery('.wrapper').on('click', '.dialogueBox-backdrop, .dialogueBox-dismiss', function(){
 
-                if(currentPhase == 'confirmHandPhase') {
+                if(currentPhase == 'handConfirmationPhase') {
 
                     // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
                     toggleDialogueBox(false,false);
 
-                    confirmHandPhase = false; // end hand confirmation phase
+                    handConfirmationPhase = false; // end hand confirmation phase
 
                     // determine if caster needs to be selected or is already present
                     let casterInPlay = jQuery('.in-play').find('.activeCaster').length;
@@ -622,8 +643,8 @@
 
                     } else {
 
-                        resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                        currentPhase = 'resourcePoolPhase';
+                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                        currentPhase = 'resourcePoolingPhase';
 
                         // Update phase indicator
                         updatePhaseIndicator();
@@ -643,13 +664,13 @@
 
                     }
 
-                } else if(currentPhase == 'confirmCasterPhase') { 
+                } else if(currentPhase == 'casterConfirmationPhase') { 
 
                     toggleDialogueBox(false,false);
 
-                    confirmCasterPhase = false; // disallow UI key navigation
-                    resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolPhase';
+                    casterConfirmationPhase = false; // disallow UI key navigation
+                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
                     updatePhaseIndicator();
@@ -667,13 +688,13 @@
                     // Display resource value tags
                     displayResourceValueTags();
 
-                } else if(currentPhase == 'confirmResourcePhase') { 
+                } else if(currentPhase == 'resourceConfirmationPhase') { 
 
                     toggleDialogueBox(false,false);
 
-                    confirmResourcePhase = false; // disallow UI key navigation
-                    /*resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolPhase';
+                    resourceConfirmationPhase = false; // disallow UI key navigation
+                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
                     updatePhaseIndicator();
@@ -697,19 +718,19 @@
             // Confirm with mouse
             jQuery('.dialogueBox').on('click','.btn-confirm',function(){
 
-                if(confirmHandPhase) {
+                if(handConfirmationPhase) {
 
                     var handPermanence = jQuery(this).attr('data-confirm');
 
                     determineHandConfirmation(playerHand,handPermanence); // handle confirmation response
 
-                } else if(confirmCasterPhase) {
+                } else if(casterConfirmationPhase) {
 
                     var confirmCaster = jQuery(this).attr('data-confirm');
 
                     determineCasterConfirmation(confirmCaster);
 
-                } else if(confirmResourcePhase) {
+                } else if(resourceConfirmationPhase) {
 
                     var confirmResource = jQuery(this).attr('data-confirm');
 
@@ -728,19 +749,19 @@
             // Confirm with keys
             function keyConfirmation() {
 
-                if(confirmHandPhase) {
+                if(handConfirmationPhase) {
 
                     var handPermanence = jQuery('.btn-confirm.focus').attr('data-confirm');
 
                     determineHandConfirmation(playerHand,handPermanence); // handle confirmation response
 
-                } else if(confirmCasterPhase) {
+                } else if(casterConfirmationPhase) {
 
                     var confirmCaster = jQuery('.btn-confirm.focus').attr('data-confirm');
 
                     determineCasterConfirmation(confirmCaster);
 
-                } else if(confirmResourcePhase) {
+                } else if(resourceConfirmationPhase) {
 
                     var confirmResource = jQuery('.btn-confirm.focus').attr('data-confirm');
 
@@ -1268,18 +1289,11 @@
                         playerHand = jQuery('[data-field="player-field"]');
                         drawCards(playerHand);
 
-                        // Update and display phase guide
-                        guideInstruction = 'Accept, rejcet or browse hand drawn.';
-                        updatePhaseGuide(guideInstruction,currentPhase);
-
                     } else if(!playerTurn) {
 
                         // AI turn
                         playerHand = jQuery('[data-field="ai-field"]');
                         drawCards(playerHand);
-
-                        // Dsimiss phase guide
-                        dismissPhaseGuide();
 
                     }
 
@@ -1315,6 +1329,20 @@
 
                         discardCards(playerHand);
 
+                        if(playerTurn) {
+
+                            // Update and display phase guide
+                            guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
+                            updatePhaseGuide(guideInstruction,currentPhase);
+
+                        } else if(!playerTurn) {
+
+                            // Update and display phase guide
+                            guideInstruction = 'Discarding Cards...';
+                            updatePhaseGuide(guideInstruction,currentPhase);
+
+                        }
+
                     }
 
                 },2000);
@@ -1327,6 +1355,20 @@
                 invalidDrawNotice = false;
 
                 discardCards(playerHand);
+
+                if(playerTurn) {
+
+                    // Update and display phase guide
+                    guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
+                    updatePhaseGuide(guideInstruction,currentPhase);
+
+                } else if(!playerTurn) {
+
+                    // Update and display phase guide
+                    guideInstruction = 'Discarding Cards...';
+                    updatePhaseGuide(guideInstruction,currentPhase);
+
+                }
 
             }
 
@@ -1349,11 +1391,14 @@
                 // call dialogue box
                 toggleDialogueBox(true,false);
 
-                confirmHandPhase = true; // allow key selection
-                currentPhase = 'confirmHandPhase';
+                handConfirmationPhase = true; // allow key selection
+                currentPhase = 'handConfirmationPhase';
 
                 // Update phase indicator
                 updatePhaseIndicator();
+
+                // Dismiss current phase guide
+                dismissPhaseGuide();
 
             }
 
@@ -1366,7 +1411,7 @@
                     // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
                     toggleDialogueBox(false,false);
 
-                    confirmHandPhase = false; // end hand confirmation phase
+                    handConfirmationPhase = false; // end hand confirmation phase
 
                     // determine if caster needs to be selected or is already present
                     let casterInPlay = jQuery('.in-play').find('.activeCaster').length;
@@ -1389,8 +1434,8 @@
                         markValidSelections('caster-card-type');
 
                     } else {
-                        resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                        currentPhase = 'resourcePoolPhase';
+                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                        currentPhase = 'resourcePoolingPhase';
 
                         // Update phase indicator
                         updatePhaseIndicator();
@@ -1414,10 +1459,24 @@
 
                     toggleDialogueBox(false,false); // dismiss the dialogue box
 
-                    confirmHandPhase = false; // end hand confirmation phase
+                    handConfirmationPhase = false; // end hand confirmation phase
 
                     // discard current hand
                     discardCards(playerHand);
+
+                    if(playerTurn) {
+
+                        // Update and display phase guide
+                        guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
+                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                    } else if(!playerTurn) {
+
+                        // Update and display phase guide
+                        guideInstruction = 'Discarding Cards...';
+                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                    }
 
                 } else if(handPermanence == 'deferred') { // player browses hand
 
@@ -1441,7 +1500,7 @@
                     deadPileWidth = jQuery(deadPile).outerHeight(),
                     deadPileHeight = jQuery(deadPile).outerWidth();
 
-                // draw x6 cards
+                // Discard cards
                 jQuery(playerHand).find('.card-aperture.closed').each(function(i){
 
                     let current_aperture = jQuery(this);
@@ -1528,6 +1587,20 @@
                     stackCount = player_standbyDeck.length;
 
                 if(cardsInStandbyDeck) {
+
+                    if(playerTurn) {
+
+                        // Update and display phase guide
+                        guideInstruction = 'Drawing Cards...<br> <small>Accept, reject or browse hand drawn.</small>';
+                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                    } else if(!playerTurn) {
+
+                        // Update and display phase guide
+                        guideInstruction = 'Drawing Cards...';
+                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                    }
 
                     if(jQuery(playerHand).find('.standby-pile .idleCard').length <= 0) {
                         jQuery(playerHand).find('.standby-pile').prepend(idleCard);
@@ -1722,7 +1795,7 @@
             **
             */
             // Start turn selection phase
-            if (turnSelectPhase) {
+            if (turnSelectionPhase) {
 
                 var elArray = ['terra','aero','hydro','pyro'],
                     elArrayDesignated = [],
@@ -1747,7 +1820,7 @@
                     jQuery('.turnCard-component').remove();
                 });
 
-                turnSelectPhase = false; // end turn phase
+                turnSelectionPhase = false; // end turn phase
                 drawPhase = true; // start draw phase 
                 currentPhase = 'drawPhase';
 
@@ -1976,7 +2049,7 @@
                             setTimeout(function(){ // auto dismiss after delay
 
                                 // is the turn selection phase still active?
-                                if (turnSelectPhase) {
+                                if (turnSelectionPhase) {
                                     toggleDialogueBox(false,false);
                                 }
 
@@ -2054,7 +2127,7 @@
 
                 }
 
-                if(resourcePoolPhase) {
+                if(resourcePoolingPhase) {
 
                     if(!jQuery(this).hasClass('focus')) {
                         jQuery('.card-aperture').removeClass('focus');
@@ -2088,7 +2161,33 @@
             // Select with keys
             function keySelectCaster() {
 
-                if(casterSelectionPhase) {
+                if(casterSelectionPhase || previewSelectionPhase) {
+
+                    if(!jQuery('.valid-for-selection').legnth) { // if no valid cards have been marked yet...
+
+                        // Unmark valid selection options
+                        unmarkValidSelections();
+
+                        // Mark valid selection options
+                        markValidSelections('caster-card-type');
+
+                    }
+
+                    if(jQuery('.preview-pane-component.inView').length) { // if the preview selection pane is still in view...
+
+                        // Dismiss preview pane
+                        jQuery('.preview-pane-component').removeClass('inView').addClass('preview-pane-delay');
+
+                        // Remove delay
+                        setTimeout(function(){
+                            jQuery('.preview-pane-component').removeClass('preview-pane-delay')
+                        },1000);
+
+                    }
+
+                    if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is docked, clear in preparation for next dialogue box...
+                        toggleDialogueBox();
+                    }
 
                     cardAperture = jQuery('.valid-for-selection.focus');
                     jQuery(cardAperture).find('.card').addClass('casterSelection');
@@ -2109,24 +2208,32 @@
                 placeInPlay(casterSelection, playerField, cardAperture);
                 jQuery(cardAperture).removeClass('focus closed valid-for-selection').addClass('open');
 
-                dialogueBoxContent =    `<div class="confirm-hand">
-                                            Confirm Selection
-                                            <div class="confirm-options">
-                                                <div class="btn btn-confirm focus" data-confirm="true">Accept Caster</div>
-                                                <div class="btn btn-confirm" data-confirm="false">Reject Caster</div>
-                                            </div>
-                                        </div>`;
+                setTimeout(function(){
 
-                if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
-                    jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
-                }
+                    dialogueBoxContent =    `<div class="confirm-hand">
+                                                Confirm Selection
+                                                <div class="confirm-options">
+                                                    <div class="btn btn-confirm focus" data-confirm="true">Accept Caster</div>
+                                                    <div class="btn btn-confirm" data-confirm="false">Reject Caster</div>
+                                                </div>
+                                            </div>`;
 
-                // call dialogue box
-                toggleDialogueBox(false,true);
+                    if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
+                        jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
+                    }
+
+                    // call dialogue box
+                    toggleDialogueBox(false,true);
+                
+                },500);
+
+                // Dismiss the current phase guide
+                dismissPhaseGuide();
 
                 casterSelectionPhase = false; // disallow UI key navigation
-                confirmCasterPhase = true; // allow key selection
-                currentPhase = 'confirmCasterPhase';
+                previewSelectionPhase = false; // disallow UI key navigation
+                casterConfirmationPhase = true; // allow key selection
+                currentPhase = 'casterConfirmationPhase';
 
                 // Update phase indicator
                 updatePhaseIndicator();
@@ -2179,15 +2286,15 @@
             function determineCasterConfirmation(confirmCaster) {
 
                 // continue based on condition returned
-                if(confirmCaster == 'true') { // player accepts hand
+                if(confirmCaster == 'true') { // player accepts caster
 
                     toggleDialogueBox(false,true);
 
                     jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
 
-                    confirmCasterPhase = false; // disallow UI key navigation
-                    resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolPhase';
+                    casterConfirmationPhase = false; // disallow UI key navigation
+                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
                     updatePhaseIndicator();
@@ -2205,7 +2312,7 @@
                     // Display resource value tags
                     displayResourceValueTags();
 
-                } else if(confirmCaster == 'false') { // player rejects hand
+                } else if(confirmCaster == 'false') { // player rejects caster
 
                     toggleDialogueBox(false,true);
 
@@ -2215,7 +2322,7 @@
 
                     removeFromPlay(casterSelection, playerField, cardAperture);
 
-                    confirmCasterPhase = false; // disallow UI key navigation
+                    casterConfirmationPhase = false; // disallow UI key navigation
                     casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
                     currentPhase = 'casterSelectionPhase';
 
@@ -2337,7 +2444,7 @@
             // Select with keys
             function keySelectResource() {
 
-                if(resourcePoolPhase) {
+                if(resourcePoolingPhase) {
 
                     cardAperture = jQuery('.valid-for-selection.focus');
                     jQuery(cardAperture).find('.card').addClass('resourceSelection');
@@ -2373,9 +2480,9 @@
                 // call dialogue box
                 toggleDialogueBox(false,true);
 
-                resourcePoolPhase = false; // disallow UI key navigation
-                confirmResourcePhase = true; // allow key selection
-                currentPhase = 'confirmResourcePhase';
+                resourcePoolingPhase = false; // disallow UI key navigation
+                resourceConfirmationPhase = true; // allow key selection
+                currentPhase = 'resourceConfirmationPhase';
 
                 // Update phase indicator
                 updatePhaseIndicator();
@@ -2397,9 +2504,9 @@
                     // Remove resource value tags
                     removeResourceValueTags();
 
-                    confirmResourcePhase = false; // disallow UI key navigation
-                    /*resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolPhase';
+                    resourceConfirmationPhase = false; // disallow UI key navigation
+                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
                     updatePhaseIndicator();
@@ -2424,9 +2531,9 @@
 
                     removeFromPool(resourceSelection, playerField, cardAperture);
 
-                    confirmResourcePhase = false; // disallow UI key navigation
-                    resourcePoolPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolPhase';
+                    resourceConfirmationPhase = false; // disallow UI key navigation
+                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
                     updatePhaseIndicator();
@@ -2505,6 +2612,13 @@
                     // Update resource pool wealth
                     jQuery(placeholder).parent('.resource').find('.resource-counter').text(resourceUpdatedCount);
                     jQuery(placeholder).parent('.resource').find('.resource-counter').attr('data-pool-wealth',resourceUpdatedCount);
+
+                    // Display added resource value
+                    jQuery(placeholder).parent('.resource').find('.resource-added-value').text(resourceCurrency).toggleClass('active-resource-added-value');
+                    setTimeout(function(){
+                        jQuery(placeholder).parent('.resource').find('.resource-added-value').empty().toggleClass('active-resource-added-value');
+                    },1000);
+
 
                     // Indicate active pool
                     if(!jQuery(placeholder).parent('.resource').hasClass('activePool')) {
@@ -2675,12 +2789,17 @@
                 playerHandSource = jQuery('.player-hand .focus').parents('.field').attr('data-field'),
                 previewPane = jQuery('.field[data-field="'+playerHandSource+'"]').find('.preview-pane-component');
 
-                browseHandPhase = false;
-                previewSelectionPhase = true;
-                currentPhase = 'previewSelectionPhase';
+                if (currentPhase != 'previewSelectionPhase') {
 
-                // Update phase indicator
-                updatePhaseIndicator();
+                    handBrowsingPhase = false;
+                    casterSelectionPhase = false;
+                    previewSelectionPhase = true;
+                    currentPhase = 'previewSelectionPhase';
+
+                    // Update phase indicator
+                    updatePhaseIndicator();
+
+                }
 
                 // Display preview pane
                 if(!jQuery(previewPane).hasClass('inView')) {
@@ -2688,7 +2807,7 @@
                 }
 
                 // Append card to preview pane
-                browsingSelection = jQuery('.field[data-field="'+playerHandSource+'"]').find('.focus').clone().removeClass('focus closed').appendTo('.inView .preview-pane-card');
+                browsingSelection = jQuery('.field[data-field="'+playerHandSource+'"]').find('.focus.closed').clone().removeClass('focus closed').appendTo('.inView .preview-pane-card');
 
                 // Reset preview stats
                 jQuery('.preview-pane-stats').children().remove();
@@ -2847,11 +2966,26 @@
             */
 
             // Select with mouse
-            jQuery('.player-hand').on('click mouseover','.focus',function() {
+            jQuery('.player-hand').on('mouseover','.focus.closed',function() {
 
-                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && browseHandPhase || previewSelectionPhase) {
+                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
 
                     browseAndPreview();
+
+                }
+
+            });
+
+            // Select with mouse
+            jQuery('.player-hand').on('click','.focus.closed',function() {
+
+                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && handBrowsingPhase) {
+
+                    browseAndPreview();
+
+                } else if(previewSelectionPhase || casterSelectionPhase) {
+
+                    keySelectCaster();
 
                 }
 
@@ -2860,7 +2994,7 @@
             // Select with keys
             function keyViewSelection() {
 
-                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && browseHandPhase || previewSelectionPhase) {
+                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
 
                     browseAndPreview();
 
@@ -2878,8 +3012,13 @@
             jQuery('.field').on('click','.preview-pane-dismiss',function() {
 
                 previewSelectionPhase = false;
-                browseHandPhase = true;
-                currentPhase = 'browseHandPhase';
+                if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is still docked, player has not officially accepted hand
+                    handBrowsingPhase = true;
+                    currentPhase = 'handBrowsingPhase';
+                } else { // else player has indirectly accepted hand by previous attempt at placing card into play
+                    casterSelectionPhase = true;
+                    currentPhase = 'casterSelectionHandPhase';
+                }
 
                 // Update phase indicator
                 updatePhaseIndicator();
@@ -2898,8 +3037,13 @@
             function keyDismissPreview() {
 
                 previewSelectionPhase = false;
-                browseHandPhase = true;
-                currentPhase = 'browseHandPhase';
+                if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is still docked, player has not officially accepted hand
+                    handBrowsingPhase = true;
+                    currentPhase = 'handBrowsingPhase';
+                } else { // else player has indirectly accepted hand by previous attempt at placing card into play
+                    casterSelectionPhase = true;
+                    currentPhase = 'casterSelectionPhase';
+                }
 
                 // Update phase indicator
                 updatePhaseIndicator();
@@ -2951,7 +3095,7 @@
 
                         var key = e.key;
 
-                        if (turnSelectPhase) {
+                        if (turnSelectionPhase) {
 
                             var elClass             = '.turnCard',
                                 parentEl            = '.turnCard-selection',
@@ -2969,7 +3113,7 @@
                                 applicableEl        = '.valid-for-selection',
                                 notApplicableEl     = '.invalid-for-selection, .open';
 
-                        } else if (resourcePoolPhase) {
+                        } else if (resourcePoolingPhase) {
 
                             var elClass             = '.card-aperture',
                                 parentEl            = '.player-hand',
@@ -2987,7 +3131,7 @@
                                 applicableEl        = '.valid-for-selection',
                                 notApplicableEl     = '.invalid-for-selection, .open';
 
-                        } else if (confirmHandPhase) {
+                        } else if (handConfirmationPhase) {
 
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
@@ -2996,11 +3140,11 @@
                                 applicableEl        = '.btn-confirm',
                                 notApplicableEl     = '';
 
-                        } else if (browseHandPhase) {
+                        } else if (handBrowsingPhase) {
 
                             var elClass             = '.card-aperture',
                                 parentEl            = '.player-hand',
-                                callbackFunction    = keyViewSelection,
+                                callbackFunction    = keySelectCaster,
                                 returnFunction      = toggleDockDialogueBox,
                                 applicableEl        = '.closed',
                                 notApplicableEl     = '.open';
@@ -3009,12 +3153,12 @@
 
                             var elClass             = '.card-aperture',
                                 parentEl            = '.player-hand',
-                                callbackFunction    = keyViewSelection,
+                                callbackFunction    = keySelectCaster,
                                 returnFunction      = keyDismissPreview,
                                 applicableEl        = '.closed',
                                 notApplicableEl     = '.open';
 
-                        } else if (confirmCasterPhase) {
+                        } else if (casterConfirmationPhase) {
 
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
@@ -3023,7 +3167,7 @@
                                 applicableEl        = '.btn-confirm',
                                 notApplicableEl     = '';
 
-                        } else if (confirmResourcePhase) {
+                        } else if (resourceConfirmationPhase) {
 
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
@@ -3205,23 +3349,43 @@
 
                     case 'ArrowRight':
                         arrowRightUp();
+
+                        // Display preview selection
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                            keyViewSelection();
+                        }
+
                     break;
 
                     case 'ArrowLeft':
                         arrowLeftDown();
+
+                        // Display preview selection
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                            keyViewSelection();
+                        }
+
                     break;
 
                     case 'ArrowUp':
-                        if(browseHandPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
                             switchHands(key);
+
+                            // Display preview selection
+                            keyViewSelection();
+
                         } else {
                             arrowRightUp();
                         }
                     break;
 
                     case 'ArrowDown':
-                        if(browseHandPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
                             switchHands(key);
+
+                            // Display preview selection
+                            keyViewSelection();
+
                         } else {
                             arrowLeftDown();
                         }
@@ -3898,8 +4062,20 @@
             .overview-win-indicator > div:last-child {
                 padding-left: 10px;
             }
+            .overview-phase-indicator {
+                position: relative;
+            }
             .overview-current-phase {
                 text-transform: capitalize;
+                transition: .5s;
+                position: absolute;
+            }
+            .overview-display-phase {
+                right: 0;
+            }
+            .overview-former-phase, 
+            .overview-conceal-phase {
+                right: -1000px;
             }
             .overview-player-win:before {
                 content: "Player";
@@ -5004,6 +5180,7 @@
                 align-items: center;
                 margin-bottom: 10px;
                 transition: .5s;
+                position: relative;
             }
             .resource-field-component .resource > div {
                 display: inline-block;
@@ -5085,6 +5262,32 @@
                 transition: .5s;
                 overflow: hidden;
                 z-index: 9;
+            }
+            .resource-added-value:before {
+                content: "+";
+            }
+            .resource-added-value {
+                position: absolute;
+                top: 0;
+                font-size: 30px;
+                color: #b3b3b3;
+                transition: .2s;
+                height: 0;
+                width: 0;
+                overflow: hidden;
+                opacity: 0;
+            }
+            .resource-field-component[data-resource-field="ai-field"] .resource-added-value {
+                right: 100%;
+            }
+            .resource-field-component[data-resource-field="player-field"] .resource-added-value {
+                left: 100%;
+            }
+            .active-resource-added-value {
+                width: 35px;
+                height: 35px;
+                opacity: 1;
+                top: -30px;
             }
             .activeResourceTag {
                 width: 25px;
