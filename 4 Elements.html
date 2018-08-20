@@ -1049,6 +1049,7 @@
                                                             <div class="card-force">${cardForce}</div>
                                                             <div class="card-type">${cardType}</div>
                                                             <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
                                                         </div>`;
                                 jQuery(clonedCard).prepend(cardBody).removeClass('ghostCard');
 
@@ -1061,6 +1062,17 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('peerless-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>');
 
+                                    // Update Levelling Cost
+                                    jQuery(clonedCard).find('.card-levelling-cost').prepend(
+                                            `<div class="levelling-cost" data-levelling-cost="50">
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                            </div>`
+                                        );
+
                                     // Update Resource Currency
                                     jQuery(clonedCard).attr('data-resource-currency','0');
 
@@ -1068,6 +1080,17 @@
 
                                     jQuery(clonedCard).find('.cardFront').addClass('elite-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>');
+
+                                    // Update Levelling Cost
+                                    jQuery(clonedCard).find('.card-levelling-cost').prepend(
+                                            `<div class="levelling-cost" data-levelling-cost="30">
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                            </div>`
+                                        );
 
                                     // Update Resource Currency
                                     jQuery(clonedCard).attr('data-resource-currency','1');
@@ -1078,6 +1101,17 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('adept-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
+                                    // Update Levelling Cost
+                                    jQuery(clonedCard).find('.card-levelling-cost').prepend(
+                                            `<div class="levelling-cost" data-levelling-cost="20">
+                                                <i class="fas fa-circle"></i>
+                                                <i class="fas fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                            </div>`
+                                        );
+
                                     // Update Resource Currency
                                     jQuery(clonedCard).attr('data-resource-currency','2');
                                     jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i><i class="fas fa-circle"></i>');
@@ -1086,6 +1120,17 @@
 
                                     jQuery(clonedCard).find('.cardFront').addClass('proficient-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i>');
+
+                                    // Update Levelling Cost
+                                    jQuery(clonedCard).find('.card-levelling-cost').prepend(
+                                            `<div class="levelling-cost" data-levelling-cost="10">
+                                                <i class="fas fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                            </div>`
+                                        );
 
                                     // Update Resource Currency
                                     jQuery(clonedCard).attr('data-resource-currency','3');
@@ -2653,21 +2698,41 @@
                     removeResourceValueTags();
 
                     resourceConfirmationPhase = false; // disallow UI key navigation
-                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolingPhase';
 
-                    // Update phase indicator
-                    updatePhaseIndicator();
+                    // Determine viable ranking promotion
+                    promoteRankPossibility();
 
-                    // Update and display phase guide
-                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-                    updatePhaseGuide(guideInstruction,currentPhase);
+                    if(rankPromotion) { // rank promotion possible, proceed to Levelling Phase
 
-                    // Mark valid selection options
-                    markValidSelections('caster-card-type');*/
+	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
+	                    currentPhase = 'levellingPhase';
 
-                    // Unmark valid selection options
-                    unmarkValidSelections();
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
+
+	                    // Update and display phase guide
+	                    guideInstruction = 'Select a valid caster card to promote to';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
+
+	                } else if(!rankPromotion) { // rank promotion not possible, proceed to Support Phase
+
+	                    supportPhase = true; // start resource pooling phase and allow UI key navigation
+	                    currentPhase = 'supportPhase';
+
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
+
+	                    // Update and display phase guide
+	                    guideInstruction = 'Allocate a valid support card for battle phase assist';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
+
+	                    // Mark valid selection options
+	                    markValidSelections('support-card-type');
+
+	                    // Unmark valid selection options
+	                    unmarkValidSelections();
+
+	                }
 
                 } else if(confirmResource == 'false') { // player rescinds resource
 
@@ -2918,6 +2983,156 @@
 
             /*
             **
+            ** Levelling Phase
+            **
+            */
+            var rankPromotion = false;
+
+            // Determine rank promotion possibility
+            function promoteRankPossibility() {
+
+            	rankPromotion = false;
+
+            	var checkCaster,
+            		casterRank,
+            		casterDiscipline,
+            		levellingCost,
+            		resourcePoolValue,
+            		nextTier;
+
+            	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+
+            	checkCaster = jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.cardFront');
+
+            	// Determine rank of card in play
+            	if(jQuery(checkCaster).hasClass('neophyte-ranking')) {
+
+            		casterRank = 'neophyte';
+
+            	} else if(jQuery(checkCaster).hasClass('proficient-ranking')) {
+
+            		casterRank = 'proficient';
+
+            	} else if(jQuery(checkCaster).hasClass('adept-ranking')) {
+
+            		casterRank = 'adept';
+
+            	} else if(jQuery(checkCaster).hasClass('elite-ranking')) {
+
+            		casterRank = 'elite';
+
+            	}
+
+            	// Determine discipline of card in play
+            	if(jQuery(checkCaster).hasClass('terra-motiv')) {
+
+            		casterDiscipline = 'terra-motiv';
+
+            	} else if(jQuery(checkCaster).hasClass('aero-motiv')) {
+
+            		casterDiscipline = 'aero-motiv';
+
+            	} else if(jQuery(checkCaster).hasClass('hydro-motiv')) {
+
+            		casterDiscipline = 'hydro-motiv';
+
+            	} else if(jQuery(checkCaster).hasClass('pyro-motiv')) {
+
+            		casterDiscipline = 'pyro-motiv';
+
+            	}
+
+            	// Determine if rank promotion is affordable
+            	function rankCostAffordability(nextTier) {
+
+            		// Iterate through all possible options
+    				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).each(function(){
+
+    					// Retrieve valid higher tier levelling cost
+    					levellingCost = Number(jQuery(this).find('.card-levelling-cost').attr('data-levelling-cost'));
+
+    					// Retrieve resource pool value
+    					resourcePoolValue = Number(jQuery('[data-resource-field="'+playerField+'"] .resource-counter').attr('data-pool-wealth'));
+
+    					// Determine if resource pool value is greater than levelling cost
+    					if(resourcePoolValue > levellingCost) {
+
+    						// Possible to promote rank
+    						rankPromotion = true;
+
+    						jQuery(this).addClass('valid-for-selection');
+
+    					}
+
+    				});
+
+            	}
+
+            	// Determine if valid higher tier is present and is of identical discipline
+            	switch(casterRank) {
+
+            		case 'neophyte':
+
+            			nextTier = '.proficient-ranking';
+
+            			if(	jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).length && 						// determine if a valid higher tier is present
+            				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
+
+            				// Determine if rank promotion is affordable
+            				rankCostAffordability(nextTier);
+
+            			}
+
+            		break;
+
+            		case 'proficient':
+
+            			nextTier = '.adept-ranking';
+
+            			if(	jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).length && 						// determine if a valid higher tier is present
+            				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
+
+            				// Determine if rank promotion is affordable
+            				rankCostAffordability(nextTier);
+
+            			}
+
+            		break;
+
+            		case 'adept':
+
+            			nextTier = '.elite-ranking';
+
+            			if(	jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).length && 						// determine if a valid higher tier is present
+            				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
+
+            				// Determine if rank promotion is affordable
+            				rankCostAffordability(nextTier);
+
+            			}
+
+            		break;
+
+            		case 'elite':
+
+            			nextTier = '.peerless-ranking';
+
+            			if(	jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).length && 						// determine if a valid higher tier is present
+            				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
+
+            				// Determine if rank promotion is affordable
+            				rankCostAffordability(nextTier);
+
+            			}
+
+            		break;
+
+            	}
+
+            }
+
+            /*
+            **
             ** Browse & Preview Phase
             **
             */
@@ -2925,12 +3140,15 @@
                 playerHandSource,
                 previewPane,
                 previewForce,
+                previewNerf,
                 previewDiscipline,
                 previewDescription,
                 previewResourceCurrency,
                 previewResourceCurrencyHTML,
                 previewResourceCost,
                 previewResourceCostHTML,
+                previewLevellingCost,
+                previewLevellingCostHTML,
                 previewSupport,
                 previewRank;
 
@@ -2976,13 +3194,19 @@
 
                     if(jQuery(browsingSelection).find('.card-force-nerfed').length) {
                         previewForce = jQuery(browsingSelection).find('.card-force span').text();
-                        previewForce = '<span>'+previewForce+'<i class="fas fa-asterisk"></i></span><br><small><i class="fas fa-asterisk"></i>Summoning Malady</small>';
+                        previewNerf = jQuery(browsingSelection).find('.card-marker span').text();
+                        previewForce = '<span>'+previewForce+' (-'+previewNerf+')<i class="fas fa-asterisk"></i></span><br><small><i class="fas fa-asterisk"></i>Summoning Malady</small>';
                     } else {
                         previewForce = jQuery(browsingSelection).find('.card-force').text();
                     }
 
                     previewResourceCurrency = jQuery(browsingSelection).find('.card-resource-currency').children().length;
                     previewResourceCurrencyHTML = jQuery(browsingSelection).find('.card-resource-currency').html();
+
+                    if(!jQuery(browsingSelection).find('.cardFront').hasClass('neophyte-ranking')) {
+	                    previewLevellingCost = jQuery(browsingSelection).find('.levelling-cost').attr('data-levelling-cost');
+	                    previewLevellingCostHTML = jQuery(browsingSelection).find('.levelling-cost').html();
+	                }
 
                 }
 
@@ -3004,8 +3228,17 @@
 
                     jQuery('.preview-pane-stats').prepend(  `<div class="stat-resource-currency">
                                                                 <div class="stat-title">Reource Value:</div>
-                                                                <div class="stat-value">${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
+                                                                <div class="stat-value">+${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
                                                             </div>`);
+
+                    if(!jQuery(browsingSelection).find('.cardFront').hasClass('neophyte-ranking')) {
+
+	                    jQuery('.preview-pane-stats').prepend(  `<div class="stat-resource-cost">
+	                                                                <div class="stat-title">Levelling Cost:</div>
+	                                                                <div class="stat-value">${previewLevellingCost}${previewLevellingCostHTML}</div>
+	                                                            </div>`);
+	                    
+	                }
 
                 } else if(jQuery(browsingSelection).find('.cardFront').hasClass('support-card-type')) {
 
@@ -4040,7 +4273,8 @@
             .proficient-ranking .card-ranking .fas {
                 color: #cd7f32;
             }
-            .card-resource-cost {
+            .card-resource-cost,
+            .card-levelling-cost {
                 position: absolute;
                 text-align: center;
                 bottom: 30px;
@@ -4050,10 +4284,13 @@
                 letter-spacing: 2px;
             }
             .card-resource-cost .fas,
-            .card-resource-cost .far {
+            .card-resource-cost .far,
+            .card-levelling-cost .fas,
+            .card-levelling-cost .far {
                 color: #404040;
             }
-            .resource-cost {
+            .resource-cost,
+            .levelling-cost {
                 letter-spacing: 0px;
             }
             .card-elemental-motif {
