@@ -2240,6 +2240,8 @@
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
+                        jQuery(this).find('.card-force-indicator svg').clone().prependTo(jQuery(this).find('.card-force-indicator')).addClass('natural-force');
+                        jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfHalf+'</span>');
@@ -2254,6 +2256,8 @@
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
+                        jQuery(this).find('.card-force-indicator svg').clone().prependTo(jQuery(this).find('.card-force-indicator')).addClass('natural-force');
+                        jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfThird+'</span>');
@@ -2268,6 +2272,8 @@
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
+                        jQuery(this).find('.card-force-indicator svg').clone().prependTo(jQuery(this).find('.card-force-indicator')).addClass('natural-force');
+                        jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfFourth+'</span>');
@@ -2282,6 +2288,8 @@
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
+                        jQuery(this).find('.card-force-indicator svg').clone().prependTo(jQuery(this).find('.card-force-indicator')).addClass('natural-force');
+                        jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfFifth+'</span>');
@@ -3967,6 +3975,18 @@
                 position: absolute;
                 display: block;
             }
+            .card-force-indicator svg.natural-force {
+			    position: absolute;
+			}
+			.card-force-indicator svg.natural-force circle {
+			    stroke: #787878;
+			}
+			.card-force-indicator svg.natural-force + svg {
+			    background: transparent;
+			}
+			.card-force-indicator svg.natural-force + svg circle {
+			    fill: transparent;
+			}
             .card-type {
                 color: #404040;
                 position: absolute;
