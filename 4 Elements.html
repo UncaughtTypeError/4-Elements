@@ -1064,7 +1064,7 @@
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
-                                            `<div class="levelling-cost" data-levelling-cost="50">
+                                            `<div class="levelling-cost" data-levelling-cost="20">
                                                 <i class="fas fa-circle"></i>
                                                 <i class="fas fa-circle"></i>
                                                 <i class="fas fa-circle"></i>
@@ -1083,7 +1083,7 @@
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
-                                            `<div class="levelling-cost" data-levelling-cost="30">
+                                            `<div class="levelling-cost" data-levelling-cost="10">
                                                 <i class="fas fa-circle"></i>
                                                 <i class="fas fa-circle"></i>
                                                 <i class="fas fa-circle"></i>
@@ -1103,7 +1103,7 @@
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
-                                            `<div class="levelling-cost" data-levelling-cost="20">
+                                            `<div class="levelling-cost" data-levelling-cost="5">
                                                 <i class="fas fa-circle"></i>
                                                 <i class="fas fa-circle"></i>
                                                 <i class="far fa-circle"></i>
@@ -1123,7 +1123,7 @@
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
-                                            `<div class="levelling-cost" data-levelling-cost="10">
+                                            `<div class="levelling-cost" data-levelling-cost="3">
                                                 <i class="fas fa-circle"></i>
                                                 <i class="far fa-circle"></i>
                                                 <i class="far fa-circle"></i>
@@ -2228,9 +2228,12 @@
                     nerfedForce,
                     adjustedForce;
 
+                // Nerf force by ranking
                 jQuery(checkRank).each(function(i){
 
                     if(jQuery(this).find('.cardFront').hasClass('proficient-ranking')) {
+
+                    	jQuery(this).addClass('caster-nerfed');
 
                         nerfedForce = Number(jQuery(this).find('.card-force').text());
 
@@ -2248,6 +2251,8 @@
 
                     } else if(jQuery(this).find('.cardFront').hasClass('adept-ranking')) {
 
+                    	jQuery(this).addClass('caster-nerfed');
+
                         nerfedForce = Number(jQuery(this).find('.card-force').text());
 
                         nerfedForce = Math.ceil(nerfedForce / 3);
@@ -2263,6 +2268,8 @@
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfThird+'</span>');
 
                     } else if(jQuery(this).find('.cardFront').hasClass('elite-ranking')) {
+
+                    	jQuery(this).addClass('caster-nerfed');
 
                         nerfedForce = Number(jQuery(this).find('.card-force').text());
 
@@ -2280,6 +2287,8 @@
 
                     } else if(jQuery(this).find('.cardFront').hasClass('peerless-ranking')) {
 
+                    	jQuery(this).addClass('caster-nerfed');
+
                         nerfedForce = Number(jQuery(this).find('.card-force').text());
 
                         nerfedForce = Math.ceil(nerfedForce / 5);
@@ -2295,6 +2304,30 @@
                         jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfFifth+'</span>');
 
                     }
+
+                });
+
+            }
+
+            // Remove force nerfs
+            function restoreForce() {
+
+            	var nerfedCard = jQuery(playerHand).find('.player-hand .caster-nerfed'),
+            		restoreForce;
+
+            	jQuery(nerfedCard).each(function(){
+
+                	// Restore force indicator
+                    restoreForce = jQuery(this).find('.card-force-nerfed strike').text();
+                    jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',restoreForce+', 100');
+                    jQuery(this).find('.card-force-indicator .natural-force').remove();
+
+                    // Restore natural force
+                    jQuery(this).find('.card-force-nerfed span').text(restoreForce);
+                    jQuery(this).find('.card-force').removeClass('card-force-nerfed');
+                    jQuery(this).find('.card-force strike, .player-hand .card-force .fas').hide().remove();
+
+                    jQuery(this).removeClass('caster-nerfed');
 
                 });
 
@@ -2490,6 +2523,9 @@
                 if(confirmCaster == 'true') { // player accepts caster
 
                     toggleDialogueBox(false,true);
+
+                    //Remove force nerfs
+                    restoreForce();
 
                     jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
 
@@ -2722,7 +2758,7 @@
 	                    guideInstruction = 'Select a valid caster card to promote to';
 	                    updatePhaseGuide(guideInstruction,currentPhase);
 
-	                } else if(!rankPromotion) { // rank promotion not possible, proceed to Support Phase
+	                } else if(rankPromotion == false) { // rank promotion not possible, proceed to Support Phase
 
 	                    supportPhase = true; // start resource pooling phase and allow UI key navigation
 	                    currentPhase = 'supportPhase';
@@ -2994,7 +3030,22 @@
             ** Levelling Phase
             **
             */
-            var rankPromotion = false;
+            var rankPromotion;
+
+            // Expedite levelling phase with support card
+            function expediteRankPossibility() {
+
+                // Determine if levelling support card is available to play
+                if(jQuery(playerHand).find('.').length) {
+                	// TODO : enter support levelling phase and allow the opportunity to play the support card (even if it's ineffective, player still has opportunity to 'discard' the card in this way)
+                } else {
+
+                	// Progress through standard levelling
+                	promoteRankPossibility();
+
+                }
+
+            }
 
             // Determine rank promotion possibility
             function promoteRankPossibility() {
@@ -3065,10 +3116,10 @@
     					// Determine if resource pool value is greater than levelling cost
     					if(resourcePoolValue > levellingCost) {
 
-    						// Possible to promote rank
-    						rankPromotion = true;
-
     						jQuery(this).addClass('valid-for-selection');
+
+    						// Possible to promote rank
+    						return rankPromotion = true;
 
     					}
 
