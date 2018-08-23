@@ -1519,6 +1519,11 @@
                     toggleDialogueBox(false,false); // dismiss the dialogue box
 
                     handConfirmationPhase = false; // end hand confirmation phase
+                    drawPhase = true;
+                    currentPhase = 'drawPhase';
+
+                    // Update phase indicator
+                    updatePhaseIndicator();
 
                     // discard current hand
                     discardCards(playerHand);
@@ -2239,7 +2244,7 @@
 
                         nerfedForce = Math.ceil(nerfedForce / 2);
                         naturalForce = jQuery(this).find('.card-force').text();
-                        adjustedForce = '<strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span>';
+                        adjustedForce = '<div class="card-force-nerf ghostEl"><strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span></div>';
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
@@ -2247,7 +2252,7 @@
                         jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
-                        jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfHalf+'</span>');
+                        jQuery(this).find('.card-marker').prepend('<div class="card-force-fraction-deduction ghostEl"><i class="fas fa-arrow-down"></i><span>'+nerfHalf+'</span></div>');
 
                     } else if(jQuery(this).find('.cardFront').hasClass('adept-ranking')) {
 
@@ -2257,7 +2262,7 @@
 
                         nerfedForce = Math.ceil(nerfedForce / 3);
                         naturalForce = jQuery(this).find('.card-force').text();
-                        adjustedForce = '<strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span>';
+                        adjustedForce = '<div class="card-force-nerf ghostEl"><strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span></div>';
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
@@ -2265,7 +2270,7 @@
                         jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
-                        jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfThird+'</span>');
+                        jQuery(this).find('.card-marker').prepend('<div class="card-force-fraction-deduction ghostEl"><i class="fas fa-arrow-down"></i><span>'+nerfThird+'</span></div>');
 
                     } else if(jQuery(this).find('.cardFront').hasClass('elite-ranking')) {
 
@@ -2275,7 +2280,7 @@
 
                         nerfedForce = Math.ceil(nerfedForce / 4);
                         naturalForce = jQuery(this).find('.card-force').text();
-                        adjustedForce = '<strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span>';
+                        adjustedForce = '<div class="card-force-nerf ghostEl"><strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span></div>';
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
@@ -2283,7 +2288,7 @@
                         jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
-                        jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfFourth+'</span>');
+                        jQuery(this).find('.card-marker').prepend('<div class="card-force-fraction-deduction ghostEl"><i class="fas fa-arrow-down"></i><span>'+nerfFourth+'</span></div>');
 
                     } else if(jQuery(this).find('.cardFront').hasClass('peerless-ranking')) {
 
@@ -2293,7 +2298,7 @@
 
                         nerfedForce = Math.ceil(nerfedForce / 5);
                         naturalForce = jQuery(this).find('.card-force').text();
-                        adjustedForce = '<strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span>';
+                        adjustedForce = '<div class="card-force-nerf ghostEl"><strike>'+naturalForce+'</strike><span>'+nerfedForce+'<i class="fas fa-level-down-alt"></i></span></div>';
 
                         // Adjust card force
                         jQuery(this).find('.card-force').addClass('card-force-nerfed').empty().prepend(adjustedForce);
@@ -2301,11 +2306,15 @@
                         jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',nerfedForce+' 100');
 
                         // Display nerf fraction
-                        jQuery(this).find('.card-marker').prepend('<i class="fas fa-arrow-down"></i><span>'+nerfFifth+'</span>');
+                        jQuery(this).find('.card-marker').prepend('<div class="card-force-fraction-deduction ghostEl"><i class="fas fa-arrow-down"></i><span>'+nerfFifth+'</span></div>');
 
                     }
 
                 });
+
+				setTimeout(function(){
+					jQuery(checkRank).find('.ghostEl').removeClass('ghostEl');
+				},100);
 
             }
 
@@ -2313,21 +2322,43 @@
             function restoreForce() {
 
             	var nerfedCard = jQuery(playerHand).find('.player-hand .caster-nerfed'),
+            		nerfedCardCount = jQuery(nerfedCard).length,
             		restoreForce;
 
-            	jQuery(nerfedCard).each(function(){
+            	iterationDelay = 200;
 
-                	// Restore force indicator
-                    restoreForce = jQuery(this).find('.card-force-nerfed strike').text();
-                    jQuery(this).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',restoreForce+', 100');
-                    jQuery(this).find('.card-force-indicator .natural-force').remove();
+            	jQuery(nerfedCard).each(function(i,el){
+            		i++
 
-                    // Restore natural force
-                    jQuery(this).find('.card-force-nerfed span').text(restoreForce);
-                    jQuery(this).find('.card-force').removeClass('card-force-nerfed');
-                    jQuery(this).find('.card-force strike, .player-hand .card-force .fas').hide().remove();
+            		setTimeout(function(){
 
-                    jQuery(this).removeClass('caster-nerfed');
+            			// Remove fraction deduction
+            			jQuery(el).find('.card-force-fraction-deduction').fadeOut(100,function(){
+            				jQuery(el).find('.card-force-fraction-deduction').remove();
+            			});
+
+	                	// Restore force indicator
+	                    restoreForce = jQuery(el).find('.card-force-nerfed strike').text();
+	                    jQuery(el).find('.card-force-indicator svg:not(.natural-force) circle').css('stroke-dasharray',restoreForce+', 100');
+
+	                    // Restore natural force
+	                    jQuery(el).find('.card-force-nerfed span').fadeOut(100,function(){
+	                    	jQuery(el).find('.card-force-nerfed span').text(restoreForce).prependTo(jQuery(el).find('.card-force-nerfed'));
+	                    	jQuery(el).find('.card-force-nerf').remove();
+	                    });
+	                    jQuery(el).find('.card-force strike, .card-force .fas').fadeOut(100).remove();
+
+	                    if(i == nerfedCardCount) {
+	                    	setTimeout(function(){
+			                    jQuery(nerfedCard).find('.card-force').removeClass('card-force-nerfed').children().fadeIn();
+		                    	jQuery(nerfedCard).find('.card-force-indicator .natural-force').remove();
+								jQuery(nerfedCard).removeClass('caster-nerfed');
+							},200);
+	                	}
+
+	                },iterationDelay);
+
+	                iterationDelay += 200;
 
                 });
 
@@ -3894,6 +3925,9 @@
             .placingCard.in-play {
                 z-index: 9;
             }
+            .ghostEl {
+            	opacity: 0;
+            }
             /* || Cards */
             .card {
                 background: #504f4f;
@@ -3934,8 +3968,14 @@
                 width: 30px;
                 margin: auto;
             }
-            .cardFront .card-force-nerfed {
+            .card-force-nerfed,
+            .card-force-nerf,
+            .card-force-fraction-deduction {
                 transition: .2s;
+            }
+            .card-force-nerf:not(.ghostEl),
+            .card-force-fraction-deduction:not(.ghostEl) {
+                opacity: 1;
             }
             .card-force-nerfed strike:before {
                 position: absolute;
@@ -4015,7 +4055,7 @@
                 width: 100px;
                 height: 100px;
                 transform: rotate(-90deg);
-                background: #655;
+                background: #504f4f;
                 border-radius: 50%;
             }
             .card-force-indicator svg:after {
