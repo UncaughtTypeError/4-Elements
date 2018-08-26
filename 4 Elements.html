@@ -231,16 +231,19 @@
 
             // Phases
             var currentPhase                = 'turnSelectionPhase', // define the current phase for reference sake
+            	formerPhase,										// store previous phase for reference sake
                 turnSelectionPhase          = true,                 // determine turn order
                 drawPhase                   = false,                // draw cards for hand
                 casterSelectionPhase        = false,                // select caster card and place into active play
                 resourcePoolingPhase        = false,                // add to resource pool to accrue spending points for support cards and levelling
                 baseSwitchingPhase          = false,                // switch elemental base type if possible (pyro, hydro, terra, aero)
                 supportSelectionPhase       = false,                // select support card and place into active play
-                levellingPhase              = false,                // caster level up if possible (proficient, adept, elite, peerless)
+                supportLevellingPhase		= false,                // caster support levelling if possible (proficient, adept, elite, peerless)
+                levellingPhase              = false,                // caster levelling if possible (proficient, adept, elite, peerless)
                 handConfirmationPhase       = false,                // prompt player to confirm or discard drawn hand
                 casterConfirmationPhase     = false,                // prompt player to confirm or reject caster selection
                 resourceConfirmationPhase   = false,                // prompt player to confirm or reject resource selection
+                supportConfirmationPhase   	= false,                // prompt player to confirm or reject support selection
                 handBrowsingPhase           = false,                // allow player to browse hand
                 previewSelectionPhase       = false,                // allow player to preview card
             // Notices
@@ -511,6 +514,7 @@
                         case 'handConfirmationPhase' :
                             handConfirmationPhase = false;
                             handBrowsingPhase = true;
+                            formerPhase = 'handConfirmationPhase';
                             currentPhase = 'handBrowsingPhase';
 
                             // Update and display phase guide
@@ -542,6 +546,7 @@
                         case 'handBrowsingPhase' :
                             handBrowsingPhase = false;
                             handConfirmationPhase = true;
+                            formerPhase = 'handBrowsingPhase';
                             currentPhase = 'handConfirmationPhase';
 
                             // Default dialogue box note
@@ -554,6 +559,7 @@
                         case 'previewSelectionPhase' :
                             previewSelectionPhase = false;
                             handConfirmationPhase = true;
+                            formerPhase = 'previewSelectionPhase';
                             currentPhase = 'handConfirmationPhase';
 
                             // Default dialogue box note
@@ -630,6 +636,7 @@
                     if(casterInPlay == 0) { // no caster in play
 
                         casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+                        formerPhase = 'handConfirmationPhase';
                         currentPhase = 'casterSelectionPhase';
 
                         // Update phase indicator
@@ -653,6 +660,7 @@
                     } else {
 
                         resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                        formerPhase = 'handConfirmationPhase';
                         currentPhase = 'resourcePoolingPhase';
 
                         // Update phase indicator
@@ -679,6 +687,7 @@
 
                     casterConfirmationPhase = false; // disallow UI key navigation
                     resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    formerPhase = 'casterConfirmationPhase';
                     currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
@@ -703,6 +712,7 @@
 
                     resourceConfirmationPhase = false; // disallow UI key navigation
                     /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    formerPhase = 'resourceConfirmationPhase';
                     currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
@@ -895,22 +905,31 @@
 
                 var supportBuff  = Math.floor(Math.random()*(10-1+1)+1), // 1 -> 5 = health boost, 6 -> 10 = attack boost
                     supportNerf  = Math.floor(Math.random()*(10-1+1)+1), // 1 -> 5 = health nerf, 6 -> 10 = attack nerf
-                    supportType  = Math.floor(Math.random()*(20-1+1)+1), // 1 -> 5 = buff type, 6 -> 10 = nerf type, 11 -> 15 = battle effect type, 16 -> 20 = strategic effect type
+                    supportType  = Math.floor(Math.random()*(30-1+1)+1), // 1 -> 5 = buff type, 6 -> 10 = nerf type, 11 -> 15 = battle effect type, 16 -> 20 = strategic effect type, 21 -> 30 = levelling type 
                     supportBuild = 'placeholder',
                     supportDesc,
-                    supportEfficacy;
+                    supportTitle,
+                    supportEfficacy,
+                    supportDuration,
+                    supportCost,
+                    supportDiscipline,
+                    supportID,
+                    returnedSupportCard;
 
                  // TEMP : To be detemined by specific card   
                  supportEfficacy = Math.floor(Math.random()*(100-25+1)+25); // 25 -> 69 = neophyte, 70 -> 79 = proficient, 80 -> 89 = adept, 90 -> 99 = elite, 100 = peerless
+                 supportDuration = Math.floor(Math.random()*(10-1+1)+1); // 1 -> 8 = epheremal, 9 -> 10 = perennial
+
+                 supportDuration = supportDuration <= 8 ? 'epheremal' : 'perennial';
 
                 if(supportType > 0 && supportType <= 5) { // Buff type support
 
                     if(supportBuff > 0 && supportBuff <= 5) {
 
-                        supportDesc = "Reduce opponent's attack power by 10"; 
+                        supportDesc = "Used during Support Phase. <br>Reduce opponent's attack power by 10"; 
                         supportType = "Buff";
 
-                        supportBuild = `<div class="card-support-motiv support-buff-effect">
+                        supportBuild = `<div class="card-support-motiv support-buff-effect" data-support-duration="${supportDuration}">
                                             <i class="fas fa-shield-alt"></i>
                                             <i class="fas fa-angle-double-up"></i>
                                         </div>
@@ -922,10 +941,10 @@
 
                     } else if(supportBuff > 5 && supportBuff <= 10) {   
 
-                        supportDesc = "Boost own attack power by 10"; 
+                        supportDesc = "Used during Support Phase. <br>Boost own attack power by 10"; 
                         supportType = "Buff";
 
-                        supportBuild = `<div class="card-support-motiv support-buff-effect">
+                        supportBuild = `<div class="card-support-motiv support-buff-effect" data-support-duration="${supportDuration}">
                                             <i class="fas fa-crosshairs"></i>
                                             <i class="fas fa-angle-double-up"></i>
                                         </div>
@@ -942,10 +961,10 @@
 
                     if(supportNerf > 0 && supportNerf <= 5) {
 
-                        supportDesc = "Boost own attack power by 10"; 
+                        supportDesc = "Used during Support Phase. <br>Boost own attack power by 10"; 
                         supportType = "Nerf";
 
-                        supportBuild = `<div class="card-support-motiv support-nerf-effect">
+                        supportBuild = `<div class="card-support-motiv support-nerf-effect" data-support-duration="${supportDuration}">
                                             <i class="fas fa-shield-alt"></i>
                                             <i class="fas fa-angle-double-down"></i>
                                         </div>
@@ -957,10 +976,10 @@
 
                     } else if(supportNerf > 5 && supportNerf <= 10) {
 
-                        supportDesc = "Reduce opponent's attack power by 10"; 
+                        supportDesc = "Used during Support Phase. <br>Reduce opponent's attack power by 10"; 
                         supportType = "Nerf";
 
-                        supportBuild = `<div class="card-support-motiv support-nerf-effect">
+                        supportBuild = `<div class="card-support-motiv support-nerf-effect" data-support-duration="${supportDuration}">
                                             <i class="fas fa-crosshairs"></i>
                                             <i class="fas fa-angle-double-down"></i>
                                         </div>
@@ -975,10 +994,10 @@
 
                 } else if(supportType > 10 && supportType <= 15) { // Battle effect type support
 
-                    supportDesc = "This is a battle effect type support card <br>Hydro: Freeze (paralysis), <br>Terra: Toxic (poisoning), <br>Pyro: Scorch (burning), <br>Aero: Shock (paralysis)"; 
+                    supportDesc = "Used during Support Phase. <br>This is a battle effect type support card <br>Hydro: Freeze (paralysis), <br>Terra: Toxic (poisoning), <br>Pyro: Scorch (burning), <br>Aero: Shock (paralysis)"; 
                     supportType = "Battle";
 
-                    supportBuild = `<div class="card-support-motiv support-battle-effect">
+                    supportBuild = `<div class="card-support-motiv support-battle-effect" data-support-duration="${supportDuration}">
                                         <i class="far fa-hand-rock"></i>
                                     </div>
                                     <div class="support-description">
@@ -990,10 +1009,10 @@
 
                 } else if(supportType > 15 && supportType <= 20) { // Strategic effect type support
 
-                    supportDesc = "This is a strategy effect type support card <br>Hydro: Tidal Force (Flush Deck), <br>Terra: Tectonic Shift (Bury Support), <br>Pyro: Scorched Earth (Burn Resources), <br>Aero: Gale Force (Sweep Away Hand)";
+                    supportDesc = "Used during Support Phase. <br>This is a strategy effect type support card <br>Hydro: Tidal Force (Flush Deck), <br>Terra: Tectonic Shift (Bury Support), <br>Pyro: Scorched Earth (Burn Resources), <br>Aero: Gale Force (Sweep Away Hand)";
                     supportType = "Strategic";
 
-                    supportBuild = `<div class="card-support-motiv support-strategic-effect">
+                    supportBuild = `<div class="card-support-motiv support-strategic-effect" data-support-duration="${supportDuration}">
                                         <i class="far fa-hand-paper"></i>
                                     </div>
                                     <div class="support-description">
@@ -1002,9 +1021,106 @@
                                     <div class="support-efficacy">${supportEfficacy}</div>
                                     <div class="support-type">${supportType}</div>`;   
 
+                } else if(supportType > 20 && supportType <= 30) { // Levelling type support
+
+                	// Return a randomly generated support card
+                	returnedSupportCard = returnLevellingSupportCard();
+
+                    supportDesc = returnedSupportCard.description;
+                    supportTitle = returnedSupportCard.appellation;
+                    supportType = "Levelling";
+                    supportRank = returnedSupportCard.rank;
+                    supportEfficacy = returnedSupportCard.efficacy;
+                    supportCost = returnedSupportCard.cost;
+                    supportDiscipline = returnedSupportCard.discipline;
+                    supportID = returnedSupportCard.specification;
+
+                    supportBuild = `<div class="card-support-motiv support-levelling-effect">
+                                        <i class="fas fa-level-up-alt"></i>
+                                        <i class="fas fa-level-down-alt"></i>
+                                    </div>
+                                    <div class="support-title">${supportTitle}</div>
+                                    <div class="support-description">
+                                        ${supportDesc}
+                                    </div>
+                                    <div class="support-efficacy">${supportEfficacy}</div>
+                                    <div class="support-type">${supportType}</div>
+                                    <div class="support-attributes" 
+                                    	data-type="${supportType}"
+                                    	data-appellation="${supportTitle}"
+                                    	data-rank="${supportRank}"
+                                    	data-efficacy="${supportEfficacy}"
+                                    	data-cost="${supportCost}" 
+                                    	data-discipline="${supportDiscipline}" 
+                                    	data-id="${supportID}">
+                                    </div>`;  
+
                 }
 
                 return supportBuild;
+
+            }
+
+            // Support card constructor
+            function supportCard(specification, appellation, description, cost, ranking, efficacy, discipline) {
+            	this.specification 	= specification; 	// the ID associated with the function to invoke
+            	this.appellation 	= appellation; 		// the name of the support card
+            	this.description 	= description;		// the description of the support card
+            	this.cost 			= cost;				// the resource cost of the support card
+            	this.ranking 		= ranking;			// the ranking of the support card
+            	this.efficacy 		= efficacy;			// the efficacy of the support card will determine tier designation
+            	this.discipline 	= discipline;		// the discipline of the support card if applicable
+            }
+
+            // Randomly return Levelling Support card
+            function returnLevellingSupportCard() {
+
+            	var levellingRandomizer = Math.floor(Math.random()*(8-1+1)+1),
+            		levellingCard,
+            		supportDescription;
+
+            	switch(levellingRandomizer) {
+            		// 1 = Level Acceleration
+            		case 1 : 
+            			supportDescription = "Advance a Caster's rank by one tier at no levelling cost. <br><br>Usage: Levelling Phase. <br><br>Requirement: Must share same discipline. <br><br>Exception: Not possible in deviant states.";
+            			return levellingCard = new supportCard(100, 'Level Acceleration', supportDescription, 1, 'neophyte', 25);
+            		break;
+            		// 2 = Level Retrograde
+            		case 2 : 
+            			supportDescription = "Revert a Caster's rank to its previous tier. <br><br>Usage: Levelling Phase.";
+            			return levellingCard = new supportCard(101, 'Level Retrograde', supportDescription, 3, 'proficient', 70);
+            		break;
+            		// 3 = Level Circumvention
+            		case 3 : 
+            			supportDescription = "Bypass following tier and advance a Caster's rank x2 levels up. <br><br>Usage: Levelling Phase. <br><br>Requirement: Must share same discipline. Levelling cost must be settled. <br><br>Exception: Not possible in deviant states.";
+            			return levellingCard = new supportCard(102, 'Level Circumvention', supportDescription, 4, 'adept', 80);
+            		break;
+            		// 4 = Level Exchange
+            		case 4 : 
+            			supportDescription = "Exchange Caster with any other Caster of the same rank regardless of discipline. <br><br>Usage: Levelling Phase. <br><br>Requirement: Levelling cost must be settled.";
+            			return levellingCard = new supportCard(103, 'Level Exchange', supportDescription, 2, 'neophyte', 25);
+            		break;
+            		// 5 = Level Speciality Indifference
+            		case 5 : 
+            			supportDescription = "Advance a Caster's rank by one tier regardless of discipline. <br><br>Usage: Levelling Phase. <br><br>Requirement: Levelling cost must be settled.";
+            			return levellingCard = new supportCard(104, 'Level Speciality Indifference', supportDescription, 2, 'proficient', 70);
+            		break;
+            		// 6 = Level Relegation
+            		case 6 : 
+            			supportDescription = "Revert an opponent's Caster's rank by one tier. <br><br>Usage: Levelling Phase.";
+            			return levellingCard = new supportCard(105, 'Level Relegation', supportDescription, 5, 'elite', 90);
+            		break;
+            		// 7 = Negligible Designation
+            		case 7 : 
+            			supportDescription = "Revert an opponent's Caster's rank back to the first tier. <br><br>Usage: Levelling Phase.";
+            			return levellingCard = new supportCard(106, 'Negligible Designation', supportDescription, 7, 'peerless', 100);
+            		break;
+            		// 8 = Negligible Succession
+            		case 8 : 
+            			supportDescription = "Advance or regress a Caster's rank to any tier and discipline at no levelling cost. <br><br>Usage: Levelling Phase.";
+            			return levellingCard = new supportCard(107, 'Negligible Succession', supportDescription, 7, 'peerless', 100);
+            		break;
+            	}
 
             }
 
@@ -1186,6 +1302,7 @@
                                     cardSupport     = generateCardSupport(),
                                     cardType        = 'Support',
                                     cardBody        =   `<div class="cardFront">
+                                                            <div class="card-marker">Valid</div>
                                                             <div class="card-number">${cardData}</div>
                                                             <div class="card-discipline"></div>
                                                             <div class="card-elemental-motif"></div>
@@ -1195,16 +1312,21 @@
                                                             <div class="card-resource-cost"></div>
                                                         </div>`,
                                     cardEfficacy,
-                                    cardSupportType;
+                                    cardSupportType,
+                                    cardSupportDuration;
 
                                 jQuery(clonedCard).prepend(cardBody).removeClass('ghostCard');
 
                                 // Further define card attributes
-                                cardEfficacy    = jQuery(cardBody).find('.support-efficacy').text(),
-                                cardSupportType = jQuery(cardBody).find('.support-type').text();
+                                cardEfficacy    	= jQuery(cardBody).find('.support-efficacy').text(),
+                                cardSupportType 	= jQuery(cardBody).find('.support-type').text();
+                                cardSupportDuration = jQuery(cardBody).find('.card-support-motiv').attr('data-support-duration');
 
                                 // Define card type
                                 jQuery(clonedCard).find('.cardFront').addClass('support-card-type');
+                                if(jQuery(cardBody).find('.support-levelling-effect').length) {
+	                                jQuery(clonedCard).find('.cardFront').addClass('levelling-card-type');
+	                            }
 
                                 // Determine card efficacy
                                 if(cardEfficacy == 100) {
@@ -1315,6 +1437,17 @@
 
                                 }
 
+                                // Determine support duration
+                                if(cardSupportDuration == 'epheremal') { 
+
+                                	jQuery('<div class="card-support-duration"><i class="fas fa-exchange-alt"></i></div>').insertAfter(jQuery(clonedCard).find('.cardFront .card-discipline'));
+
+                                } else if(cardSupportDuration == 'perennial') { 
+
+                                	jQuery('<div class="card-support-duration"><i class="fas fa-redo"></i></div>').insertAfter(jQuery(clonedCard).find('.cardFront .card-discipline'));
+
+                                }
+
                             }
 
                         }
@@ -1331,6 +1464,7 @@
             **
             */
             var playerHand, // prepare reference variable
+            	fieldInContext,
                 cardsInStandbyDeck;
 
             function beginDrawPhase() {
@@ -1341,12 +1475,14 @@
 
                         // player start
                         playerHand = jQuery('[data-field="player-field"]');
+                        fieldInContext = jQuery(playerHand).attr('data-field');
                         drawCards(playerHand);
 
                     } else if(!playerTurn) {
 
                         // AI turn
                         playerHand = jQuery('[data-field="ai-field"]');
+                        fieldInContext = jQuery(playerHand).attr('data-field');
                         drawCards(playerHand);
 
                     }
@@ -1446,6 +1582,7 @@
                 toggleDialogueBox(true,false);
 
                 handConfirmationPhase = true; // allow key selection
+                formerPhase = 'drawPhase'
                 currentPhase = 'handConfirmationPhase';
 
                 // Update phase indicator
@@ -1472,6 +1609,7 @@
 
                     if(casterInPlay == 0) { // no caster in play
                         casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+                        formerPhase = 'handConfirmationPhase';
                         currentPhase = 'casterSelectionPhase';
 
                         // Update phase indicator
@@ -1494,6 +1632,7 @@
 
                     } else {
                         resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                        formerPhase = 'handConfirmationPhase';
                         currentPhase = 'resourcePoolingPhase';
 
                         // Update phase indicator
@@ -1520,6 +1659,7 @@
 
                     handConfirmationPhase = false; // end hand confirmation phase
                     drawPhase = true;
+                    formerPhase = 'handConfirmationPhase';
                     currentPhase = 'drawPhase';
 
                     // Update phase indicator
@@ -1812,6 +1952,7 @@
 
                                         drawPhase = false; // end draw phase
                                         casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+                                        formerPhase = 'drawPhase';
                                         currentPhase = 'casterSelectionPhase';
 
                                         // Update phase indicator
@@ -1891,6 +2032,7 @@
 
                 turnSelectionPhase = false; // end turn phase
                 drawPhase = true; // start draw phase 
+                formerPhase = 'turnSelectionPhase';
                 currentPhase = 'drawPhase';
 
                 // Update phase indicator
@@ -2179,7 +2321,23 @@
             // Select with mouse
             jQuery('.player-hand').on('click','.valid-for-selection',function() {
 
-                if(casterSelectionPhase) {
+                if(jQuery('.preview-pane-component.inView').length) { // if the preview selection pane is still in view...
+
+                    // Dismiss preview pane
+                    jQuery('.preview-pane-component').removeClass('inView').addClass('preview-pane-delay');
+
+                    // Remove delay
+                    setTimeout(function(){
+                        jQuery('.preview-pane-component').removeClass('preview-pane-delay')
+                    },1000);
+
+                }
+
+                if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is docked, clear in preparation for next dialogue box...
+                    toggleDialogueBox();
+                }
+
+                if(casterSelectionPhase || previewSelectionPhase || levellingPhase) {
 
                     if(!jQuery(this).hasClass('focus')) {
                         jQuery('.card-aperture').removeClass('focus');
@@ -2373,9 +2531,9 @@
             // Select with keys
             function keySelectCaster() {
 
-                if(casterSelectionPhase || previewSelectionPhase) {
+                if(casterSelectionPhase || previewSelectionPhase || levellingPhase) {
 
-                    if(!jQuery('.valid-for-selection').legnth) { // if no valid cards have been marked yet...
+                    if(!jQuery('.valid-for-selection').length) { // if no valid cards have been marked yet...
 
                         // Unmark valid selection options
                         unmarkValidSelections();
@@ -2442,8 +2600,22 @@
                 // Dismiss the current phase guide
                 dismissPhaseGuide();
 
-                casterSelectionPhase = false; // disallow UI key navigation
-                previewSelectionPhase = false; // disallow UI key navigation
+                if(casterSelectionPhase) {
+
+	                casterSelectionPhase = false; // disallow UI key navigation
+	                formerPhase = 'casterSelectionPhase';
+
+	            } else if(previewSelectionPhase) {
+
+	                previewSelectionPhase = false; // disallow UI key navigation
+	            	formerPhase = 'previewSelectionPhase';
+
+	            } else if(levellingPhase) {
+
+	                levellingPhase = false; // disallow UI key navigation
+	            	formerPhase = 'levellingPhase';
+
+	            }
                 casterConfirmationPhase = true; // allow key selection
                 currentPhase = 'casterConfirmationPhase';
 
@@ -2452,7 +2624,7 @@
 
             }
 
-            function HPcharge(charge) {
+            function HPcharge(charge,limit) {
 
                 playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
 
@@ -2463,13 +2635,14 @@
                     jQuery('[data-battle-field="'+playerField+'"] .hitpoint-component').find('.hitpoint-percentile').addClass('activePercentile');
 
                     // Interval loop variables
-                    var hitpointPercentile = 0,
+                    var hitpointComponent = jQuery('[data-battle-field="'+playerField+'"] .hitpoint-component'),
+                    	hitpointPercentile = jQuery(hitpointComponent).find('.activePercentile').length ? Number(jQuery(hitpointComponent).find('.activePercentile').text()) : 0;
                         hitpointPercentileIteration = 0;
 
-                    // Timed loop: add 10 hitpoint percentiles for x10 iterations
+                    // Timed loop: add 10 hitpoint percentiles for the limit defined
                     var intervalID = setInterval(function(){
 
-                       if(hitpointPercentileIteration === 10){ // clear interval when iteration limit is reached
+                       if(hitpointPercentileIteration === limit){ // clear interval when iteration limit is reached
                           clearInterval(intervalID);
                        }
 
@@ -2486,6 +2659,8 @@
 
                     // HP charge up
                     jQuery(jQuery('[data-battle-field="'+playerField+'"] .hitpoint-meter div').get().reverse()).each(function(){
+
+                    	if(hitpointPercentileIteration === limit){ return; } // break out of loop if limit is met
                     
                         let HPmeter = jQuery(this);
 
@@ -2502,18 +2677,25 @@
                 } else if(charge == 'down') {
 
                     // Interval loop variables
-                    var hitpointPercentile = 100,
+                    var hitpointComponent = jQuery('[data-battle-field="'+playerField+'"] .hitpoint-component'),
+                    	hitpointPercentile = jQuery(hitpointComponent).find('.activePercentile').length ? Number(jQuery(hitpointComponent).find('.activePercentile').text()) : 100;
                         hitpointPercentileIteration = 0;
 
-                    // Timed loop: deduct 10 hitpoint percentiles for x10 iterations
+                    // Determine if 
+
+                    // Timed loop: deduct 10 hitpoint percentiles for the limit defined
                     var intervalID = setInterval(function(){
 
-                       if(hitpointPercentileIteration === 10){ // clear interval when iteration limit is reached
+                       if(hitpointPercentileIteration === limit){ // clear interval when iteration limit is reached
                           clearInterval(intervalID);
 
-                          setTimeout(function(){ 
-                            jQuery('[data-battle-field="'+playerField+'"] .hitpoint-component').find('.hitpoint-percentile').empty().removeClass('activePercentile'); // remove active class and empty node
-                          },100);
+                        	if(limit === 10) { // remove hitpoint counter after deduction
+
+	                          setTimeout(function(){ 
+	                            jQuery(hitpointComponent).find('.hitpoint-percentile').empty().removeClass('activePercentile'); // remove active class and empty node
+	                          },100);
+
+	                        }
 
                        }
 
@@ -2529,7 +2711,9 @@
                     }, 50);
 
                     // HP charge down
-                    jQuery('[data-battle-field="'+playerField+'"] .hitpoint-meter div').each(function(){
+                    jQuery(hitpointComponent).find('.hitpoint-meter div').each(function(){
+
+                    	if(hitpointPercentileIteration === limit){ return; } // break out of loop if limit is met
                     
                         let HPmeter = jQuery(this);
 
@@ -2560,25 +2744,61 @@
 
                     jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
 
-                    casterConfirmationPhase = false; // disallow UI key navigation
-                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                    currentPhase = 'resourcePoolingPhase';
+                    jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0'); // reset hitpoint reversal reference
 
-                    // Update phase indicator
-                    updatePhaseIndicator();
+                    setTimeout(function(){
 
-                    // Update and display phase guide
-                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-                    updatePhaseGuide(guideInstruction,currentPhase);
+	                    if(formerPhase == 'casterSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0 || 
+	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0) {
 
-                    // Unmark valid selection options
-                    unmarkValidSelections();
+		                    casterConfirmationPhase = false; // disallow UI key navigation
+		                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+		                    formerPhase = 'casterConfirmationPhase';
+		                    currentPhase = 'resourcePoolingPhase';
 
-                    // Mark valid selection options
-                    markValidSelections('caster-card-type');
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
 
-                    // Display resource value tags
-                    displayResourceValueTags();
+		                    // Update and display phase guide
+		                    guideInstruction = 'Allocate a valid caster card for resource pooling';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
+
+		                    // Unmark valid selection options
+		                    unmarkValidSelections();
+
+		                    // Mark valid selection options
+		                    markValidSelections('caster-card-type');
+
+		                    // Display resource value tags
+		                    displayResourceValueTags();
+
+		                } else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1 || 
+	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1) {
+
+		                    casterConfirmationPhase = false; // disallow UI key navigation
+		                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+		                    formerPhase = 'casterConfirmationPhase';
+		                    currentPhase = 'resourcePoolingPhase';
+
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
+
+		                    // Update and display phase guide
+		                    guideInstruction = 'Allocate a valid caster card for resource pooling';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
+
+		                    // Unmark valid selection options
+		                    unmarkValidSelections();
+
+		                    // Mark valid selection options
+		                    markValidSelections('caster-card-type');
+
+		                    // Display resource value tags
+		                    displayResourceValueTags();*/
+
+		                }
+
+		            },500);
 
                 } else if(confirmCaster == 'false') { // player rejects caster
 
@@ -2590,22 +2810,53 @@
 
                     removeFromPlay(casterSelection, playerField, cardAperture);
 
-                    casterConfirmationPhase = false; // disallow UI key navigation
-                    casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
-                    currentPhase = 'casterSelectionPhase';
+                    setTimeout(function(){
 
-                    // Update phase indicator
-                    updatePhaseIndicator();
+	                    if(formerPhase == 'casterSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0 || 
+	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0) {
 
-                    // Update and display phase guide
-                    guideInstruction = 'Place a valid caster card in play';
-                    updatePhaseGuide(guideInstruction,currentPhase);
+		                    casterConfirmationPhase = false; // disallow UI key navigation
+		                    casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+		                    formerPhase = 'casterConfirmationPhase';
+		                    currentPhase = 'casterSelectionPhase';
 
-                    // Unmark valid selection options
-                    unmarkValidSelections();
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
 
-                    // Mark valid selection options
-                    markValidSelections('caster-card-type');
+		                    // Update and display phase guide
+		                    guideInstruction = 'Place a valid caster card in play';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
+
+		                    // Unmark valid selection options
+		                    unmarkValidSelections();
+
+		                    // Mark valid selection options
+		                    markValidSelections('caster-card-type');
+
+		                } else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0 || 
+	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0) {
+
+		                    casterConfirmationPhase = false; // disallow UI key navigation
+		                    levellingPhase = true; // start levelling phase and allow UI key navigation
+		                    formerPhase = 'casterConfirmationPhase';
+		                    currentPhase = 'levellingPhase';
+
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
+
+		                    // Update and display phase guide
+		                    guideInstruction = 'Select a valid caster card to promote to';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
+
+		                    // Unmark valid selection options
+		                    unmarkValidSelections();
+
+		                    // Mark valid selection options
+		                    promoteRankPossibility();
+
+		                }
+
+		            },500);
 
                 }
 
@@ -2647,9 +2898,36 @@
                     jQuery(cardAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('tetherCard'); // tether card to aperture for return reference if necessary
 
+                	// Remove the activeCaster class on any existing caster cards that may already be in play (essential for Levelling Phases)
+                	if(jQuery(placeholder).find('.activeCaster').length > 1) {
+	                	jQuery(placeholder).find('.activeCaster').not(':last').removeClass('activeCaster');
+	                }
+
                 }, 200);
 
-                HPcharge('up');
+                // Determine charge limit
+                var chargeLimit,
+                	currentHP;
+
+                if(jQuery('[data-battle-field="'+playerField+'"]').find('.activePercentile').length) { // there is already an active percentile to reference...
+
+                	// Reference current HP for reversals
+                	currentHP = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.activePercentile').text());
+                	jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints',currentHP);
+
+                	chargeLimit = 10 - ( currentHP / 10 );
+
+                } else { // ... no active percentile to reference, define default
+
+                	// Reference current HP for reversals
+                	currentHP = 100;
+                	jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints',currentHP);
+
+                	chargeLimit = 10;
+
+                }
+
+                HPcharge('up',chargeLimit);
 
             }
 
@@ -2691,10 +2969,40 @@
                     jQuery(cardAperture).removeClass('tetherCard open');
                     jQuery(inPlayAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('closed valid-for-selection'); // restore former aperture classes
+                    
+                	// Restore the activeCaster class on the last caster card that may already be in play (essential for Levelling Phases)
+                	if(!jQuery(placeholder).find('.card').last().hasClass('activeCaster')) {
+                		jQuery(placeholder).find('.card').last().addClass('activeCaster');
+                	}
 
                 }, 200);
 
-                HPcharge('down');
+                // Determine charge limit
+                var chargeLimit,
+                	revertToHP;
+
+                if(jQuery('[data-battle-field="'+playerField+'"]').find('.activePercentile').length) { // there is already an active percentile to reference...
+
+                	revertToHP = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.activePercentile').attr('data-revert-hitpoints'));
+
+                	chargeLimit = 10 - ( revertToHP / 10 );
+
+                	if(chargeLimit == 0) { // the calculated difference as a result of a maxed HP percentile
+
+                		if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1) { // card/s remaining after removal, revert HP
+
+                			chargeLimit = 0;
+
+                		} else { // no other cards remaining after removal, reset HP
+
+                			chargeLimit = 10;
+
+                		}
+                	}
+
+                }
+
+                HPcharge('down',chargeLimit);
 
             }
 
@@ -2748,7 +3056,17 @@
                 // call dialogue box
                 toggleDialogueBox(false,true);
 
-                resourcePoolingPhase = false; // disallow UI key navigation
+                if(previewSelectionPhase) {
+
+	                previewSelectionPhase = false; // disallow UI key navigation
+	            	formerPhase = 'previewSelectionPhase';
+
+	            } else if(resourcePoolingPhase) {
+
+	                resourcePoolingPhase = false; // disallow UI key navigation
+	            	formerPhase = 'resourcePoolingPhase';
+
+	            }
                 resourceConfirmationPhase = true; // allow key selection
                 currentPhase = 'resourceConfirmationPhase';
 
@@ -2774,12 +3092,30 @@
 
                     resourceConfirmationPhase = false; // disallow UI key navigation
 
-                    // Determine viable ranking promotion
-                    promoteRankPossibility();
+                    // Unmark valid selection options
+                    unmarkValidSelections();
 
-                    if(rankPromotion) { // rank promotion possible, proceed to Levelling Phase
+                    // Determine if ranking is possible
+                    if(supportLevellingPossibility()) { // check for support leveling cards
+
+	                    supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
+	                    formerPhase = 'resourceConfirmationPhase';
+	                    currentPhase = 'supportLevellingPhase';
+
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
+
+	                    // Update and display phase guide
+	                    guideInstruction = 'Select a valid support levelling card to place in play';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
+
+                        // Mark valid selection options
+                        markValidSelections('levelling-card-type');
+
+                    } else if(promoteRankPossibility()) { // check for standard levelling requirements
 
 	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
+	                    formerPhase = 'resourceConfirmationPhase';
 	                    currentPhase = 'levellingPhase';
 
 	                    // Update phase indicator
@@ -2789,10 +3125,11 @@
 	                    guideInstruction = 'Select a valid caster card to promote to';
 	                    updatePhaseGuide(guideInstruction,currentPhase);
 
-	                } else if(rankPromotion == false) { // rank promotion not possible, proceed to Support Phase
+	                } else { // rank promotion not possible, proceed to Support Phase
 
-	                    supportPhase = true; // start resource pooling phase and allow UI key navigation
-	                    currentPhase = 'supportPhase';
+	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
+	                    formerPhase = 'resourceConfirmationPhase';
+	                    currentPhase = 'supportSelectionPhase';
 
 	                    // Update phase indicator
 	                    updatePhaseIndicator();
@@ -2821,6 +3158,7 @@
 
                     resourceConfirmationPhase = false; // disallow UI key navigation
                     resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    formerPhase = 'resourceConfirmationPhase';
                     currentPhase = 'resourcePoolingPhase';
 
                     // Update phase indicator
@@ -3061,27 +3399,28 @@
             ** Levelling Phase
             **
             */
-            var rankPromotion;
+            var rankPromotion = false;
 
             // Expedite levelling phase with support card
-            function expediteRankPossibility() {
+            // Return: Boolean
+            function supportLevellingPossibility() {
 
                 // Determine if levelling support card is available to play
-                if(jQuery(playerHand).find('.').length) {
+                if(jQuery(playerHand).find('.player-hand .levelling-card-type').length) {
                 	// TODO : enter support levelling phase and allow the opportunity to play the support card (even if it's ineffective, player still has opportunity to 'discard' the card in this way)
+                	return true;
+
                 } else {
 
-                	// Progress through standard levelling
-                	promoteRankPossibility();
+                	return false;
 
-                }
+                } 
 
             }
 
             // Determine rank promotion possibility
+            // Return: Boolean
             function promoteRankPossibility() {
-
-            	rankPromotion = false;
 
             	var checkCaster,
             		casterRank,
@@ -3132,32 +3471,6 @@
 
             	}
 
-            	// Determine if rank promotion is affordable
-            	function rankCostAffordability(nextTier) {
-
-            		// Iterate through all possible options
-    				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).each(function(){
-
-    					// Retrieve valid higher tier levelling cost
-    					levellingCost = Number(jQuery(this).find('.card-levelling-cost').attr('data-levelling-cost'));
-
-    					// Retrieve resource pool value
-    					resourcePoolValue = Number(jQuery('[data-resource-field="'+playerField+'"] .resource-counter').attr('data-pool-wealth'));
-
-    					// Determine if resource pool value is greater than levelling cost
-    					if(resourcePoolValue > levellingCost) {
-
-    						jQuery(this).addClass('valid-for-selection');
-
-    						// Possible to promote rank
-    						return rankPromotion = true;
-
-    					}
-
-    				});
-
-            	}
-
             	// Determine if valid higher tier is present and is of identical discipline
             	switch(casterRank) {
 
@@ -3169,7 +3482,12 @@
             				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
 
             				// Determine if rank promotion is affordable
-            				rankCostAffordability(nextTier);
+            				rankCostAffordability(nextTier,casterDiscipline);
+            				if(rankPromotion) {
+            					return true;
+            				} else {
+            					return false;
+            				}
 
             			}
 
@@ -3183,7 +3501,12 @@
             				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
 
             				// Determine if rank promotion is affordable
-            				rankCostAffordability(nextTier);
+            				rankCostAffordability(nextTier,casterDiscipline);
+            				if(rankPromotion) {
+            					return true;
+            				} else {
+            					return false;
+            				}
 
             			}
 
@@ -3197,7 +3520,12 @@
             				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
 
             				// Determine if rank promotion is affordable
-            				rankCostAffordability(nextTier);
+            				rankCostAffordability(nextTier,casterDiscipline);
+            				if(rankPromotion) {
+            					return true;
+            				} else {
+            					return false;
+            				}
 
             			}
 
@@ -3211,11 +3539,64 @@
             				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).hasClass(casterDiscipline)) { 	// determine if same discipline is shared
 
             				// Determine if rank promotion is affordable
-            				rankCostAffordability(nextTier);
+            				rankCostAffordability(nextTier,casterDiscipline);
+            				if(rankPromotion) {
+            					return true;
+            				} else {
+            					return false;
+            				}
 
             			}
 
             		break;
+
+            	}
+
+            	// Determine if rank promotion is affordable
+            	function rankCostAffordability(nextTier,rankingDiscipline) {
+
+            		var resourceDiscipline;
+
+            		switch(rankingDiscipline) {
+            			case 'terra-motiv' :
+            				resourceDiscipline = '.resource-terra';
+            			break;
+            			case 'aero-motiv' :
+            				resourceDiscipline = '.resource-aero';
+            			break;
+            			case 'hydro-motiv' :
+            				resourceDiscipline = '.resource-hydro';
+            			break;
+            			case 'pyro-motiv' :
+            				resourceDiscipline = '.resource-pyro';
+            			break;
+            		}
+
+            		// Iterate through all possible options
+    				jQuery('[data-field="'+playerField+'"] .player-hand').find(nextTier).each(function(){
+
+    					if(jQuery(this).hasClass(rankingDiscipline)) {
+
+	    					// Retrieve valid higher tier levelling cost
+	    					levellingCost = Number(jQuery(this).find('.levelling-cost').attr('data-levelling-cost'));
+
+	    					// Retrieve resource pool value
+	    					resourcePoolValue = Number(jQuery('[data-resource-field="'+playerField+'"] '+resourceDiscipline+' .resource-counter').attr('data-pool-wealth'));
+
+	    					// Determine if resource pool value is greater than levelling cost
+	    					if(resourcePoolValue > levellingCost) {
+
+	    						// Mark valid selection options
+	    						jQuery(this).closest('.card-aperture').addClass('valid-for-selection');
+
+	    						// Possible to promote rank
+	    						rankPromotion = true;
+
+	    					}
+
+	    				}
+
+    				});
 
             	}
 
@@ -3233,6 +3614,7 @@
                 previewNerf,
                 previewDiscipline,
                 previewDescription,
+                previewAppellation,
                 previewResourceCurrency,
                 previewResourceCurrencyHTML,
                 previewResourceCost,
@@ -3252,8 +3634,32 @@
 
                 if (currentPhase != 'previewSelectionPhase') {
 
-                    handBrowsingPhase = false;
-                    casterSelectionPhase = false;
+                	if(handBrowsingPhase) {
+
+	                    handBrowsingPhase = false;
+	                    formerPhase = 'handBrowsingPhase';
+
+	                } else if(casterSelectionPhase) {
+
+	                    casterSelectionPhase = false;
+	                    formerPhase = 'casterSelectionPhase';
+
+	                } else if(supportLevellingPhase) {
+
+	                    supportLevellingPhase = false;
+	                    formerPhase = 'supportLevellingPhase';
+
+	                } else if(levellingPhase) {
+
+	                    levellingPhase = false;
+	                    formerPhase = 'levellingPhase';
+
+	                } else if(supportSelectionPhase) {
+
+	                    supportSelectionPhase = false;
+	                    formerPhase = 'supportSelectionPhase';
+
+	                }
                     previewSelectionPhase = true;
                     currentPhase = 'previewSelectionPhase';
 
@@ -3302,6 +3708,7 @@
 
                 if(jQuery(browsingSelection).find('.cardFront').hasClass('support-card-type')) {
 
+                    previewAppellation = jQuery(browsingSelection).find('.support-title').text();
                     previewDescription = jQuery(browsingSelection).find('.support-description').html();
                     previewResourceCost = jQuery(browsingSelection).find('.resource-cost').attr('data-resource-cost');
                     previewResourceCostHTML = jQuery(browsingSelection).find('.resource-cost').html();
@@ -3335,6 +3742,11 @@
                     jQuery('.preview-pane-stats').prepend(  `<div class="stat-description">
                                                                 <div class="stat-title">Description:</div>
                                                                 <div class="stat-value">${previewDescription}</div>
+                                                            </div>`);
+
+                    jQuery('.preview-pane-stats').prepend(  `<div class="stat-appellation">
+                                                                <div class="stat-title">Title:</div>
+                                                                <div class="stat-value">${previewAppellation}</div>
                                                             </div>`);
 
                     jQuery('.preview-pane-stats').prepend(  `<div class="stat-resource-cost">
@@ -3450,7 +3862,13 @@
             // Select with mouse
             jQuery('.player-hand').on('mouseover','.focus.closed',function() {
 
-                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && 
+                	handBrowsingPhase || 
+                	previewSelectionPhase || 
+                	casterSelectionPhase || 
+                	levellingPhase || 
+                	supportLevellingPhase || 
+                	supportSelectionPhase) {
 
                     browseAndPreview();
 
@@ -3469,6 +3887,18 @@
 
                     keySelectCaster();
 
+                } else if(previewSelectionPhase || supportLevellingPhase) {
+
+                    keySelectSupport();
+
+                } else if(previewSelectionPhase || levellingPhase) {
+
+                    keySelectCaster();
+
+                } else if(previewSelectionPhase || supportSelectionPhase) {
+
+                    keySelectSupport();
+
                 }
 
             });
@@ -3476,7 +3906,13 @@
             // Select with keys
             function keyViewSelection() {
 
-                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                if(!jQuery('.preview-pane-component').hasClass('preview-pane-delay') && 
+                	handBrowsingPhase || 
+                	previewSelectionPhase || 
+                	casterSelectionPhase|| 
+                	levellingPhase || 
+                	supportLevellingPhase || 
+                	supportSelectionPhase) {
 
                     browseAndPreview();
 
@@ -3495,11 +3931,39 @@
 
                 previewSelectionPhase = false;
                 if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is still docked, player has not officially accepted hand
+
                     handBrowsingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
                     currentPhase = 'handBrowsingPhase';
-                } else { // else player has indirectly accepted hand by previous attempt at placing card into play
+                    
+                    // Maximize docked dialogue box
+                    jQuery('.minimized-dialogueBox .dialogueBox-maximize').trigger('click');
+
+                } else if(formerPhase == 'casterSelectionPhase') { 
+                	// ...else player has implicitly accepted hand by previous attempt at placing card into play
+
                     casterSelectionPhase = true;
-                    currentPhase = 'casterSelectionHandPhase';
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'casterSelectionPhase';
+
+                } else if(formerPhase == 'supportLevellingPhase') { 
+
+                    supportLevellingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'supportLevellingPhase';
+
+                } else if(formerPhase == 'levellingPhase') { 
+
+                    levellingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'levellingPhase';
+
+                } else if(formerPhase == 'supportSelectionPhase') { 
+
+                    supportSelectionPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'supportSelectionPhase';
+
                 }
 
                 // Update phase indicator
@@ -3519,12 +3983,41 @@
             function keyDismissPreview() {
 
                 previewSelectionPhase = false;
-                if(jQuery('.minimized-dialogueBox').length) { // if dialogue box is still docked, player has not officially accepted hand
+                if(jQuery('.minimized-dialogueBox').length) { 
+                	// if dialogue box is still docked, player has not officially accepted hand...
+
                     handBrowsingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
                     currentPhase = 'handBrowsingPhase';
-                } else { // else player has indirectly accepted hand by previous attempt at placing card into play
+
+                    // Maximize docked dialogue box
+                    jQuery('.minimized-dialogueBox .dialogueBox-maximize').trigger('click');
+
+                } else if(formerPhase == 'casterSelectionPhase') { 
+                	// ...else player has implicitly accepted hand by previous attempt at placing card into play
+
                     casterSelectionPhase = true;
+                    formerPhase = 'previewSelectionPhase';
                     currentPhase = 'casterSelectionPhase';
+
+                } else if(formerPhase == 'supportLevellingPhase') { 
+
+                    supportLevellingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'supportLevellingPhase';
+
+                } else if(formerPhase == 'levellingPhase') { 
+
+                    levellingPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'levellingPhase';
+
+                } else if(formerPhase == 'supportSelectionPhase') { 
+
+                    supportSelectionPhase = true;
+                    formerPhase = 'previewSelectionPhase';
+                    currentPhase = 'supportSelectionPhase';
+
                 }
 
                 // Update phase indicator
@@ -3600,6 +4093,24 @@
                             var elClass             = '.card-aperture',
                                 parentEl            = '.player-hand',
                                 callbackFunction    = keySelectResource,
+                                returnFunction      = keyVoid,
+                                applicableEl        = '.valid-for-selection',
+                                notApplicableEl     = '.invalid-for-selection, .open';
+
+                        } else if (supportLevellingPhase) {
+
+                            var elClass             = '.card-aperture',
+                                parentEl            = '.player-hand',
+                                callbackFunction    = keySelectSupport,
+                                returnFunction      = keyVoid,
+                                applicableEl        = '.valid-for-selection',
+                                notApplicableEl     = '.invalid-for-selection, .open';
+
+                        } else if (levellingPhase) {
+
+                            var elClass             = '.card-aperture',
+                                parentEl            = '.player-hand',
+                                callbackFunction    = keySelectCaster,
                                 returnFunction      = keyVoid,
                                 applicableEl        = '.valid-for-selection',
                                 notApplicableEl     = '.invalid-for-selection, .open';
@@ -3833,7 +4344,7 @@
                         arrowRightUp();
 
                         // Display preview selection
-                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase || levellingPhase || supportLevellingPhase || supportSelectionPhase) {
                             keyViewSelection();
                         }
 
@@ -3843,14 +4354,14 @@
                         arrowLeftDown();
 
                         // Display preview selection
-                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase || levellingPhase || supportLevellingPhase || supportSelectionPhase) {
                             keyViewSelection();
                         }
 
                     break;
 
                     case 'ArrowUp':
-                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase || levellingPhase || supportLevellingPhase || supportSelectionPhase) {
                             switchHands(key);
 
                             // Display preview selection
@@ -3862,7 +4373,7 @@
                     break;
 
                     case 'ArrowDown':
-                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase) {
+                        if(handBrowsingPhase || previewSelectionPhase || casterSelectionPhase || levellingPhase || supportLevellingPhase || supportSelectionPhase) {
                             switchHands(key);
 
                             // Display preview selection
@@ -4087,6 +4598,7 @@
                 text-transform: uppercase;
                 font-size: 12px;
             }
+            .support-title,
             .support-description, 
             .support-efficacy {
                 display: none;
@@ -4124,6 +4636,18 @@
                 height: 40px;
                 margin: auto;
             }
+            .support-levelling-effect .fas:nth-child(2) {
+			    font-size: 40px;
+			    right: -15px;
+			    left: 0;
+			    top: 3px;
+			}
+			.support-levelling-effect .fas:nth-child(1) {
+			    transform: scaleX(-1);
+			    left: -15px;
+			    right: 0;
+			    bottom: 3px;
+			}
             .card-support-motiv {
                 position: relative;
                 text-align: center;
@@ -4202,6 +4726,11 @@
             .activeCard .cardFront .card-ranking {
                 bottom: 90px;
             }
+            .activeCaster .card-levelling-cost, 
+            .activeCard .card-levelling-cost {
+			    bottom: 50px;
+			    transform: scale(1.8);
+			}
             .card-number {
                 position: absolute;
                 display: block;
@@ -4226,6 +4755,17 @@
                 font-size: 10px;
                 text-transform: uppercase;
             }
+            .card-support-duration {
+			    position: absolute;
+			    right: 5px;
+			    top: 18px;
+			}
+			.card-discipline:empty + .card-support-duration {
+			    top: 5px;
+			}
+			.cardFront .card-support-duration .fas {
+			    color: #404040;
+			}
             .card-resource-currency {
                 position: absolute;
                 right: 3px;
@@ -4349,7 +4889,7 @@
             .peerless-ranking .card-number {
                 background: #1d1d1d;
                 color: white;
-                border: 1px solid white;
+                border: 1px solid #b3b3b3;
             }
             .peerless-ranking .card-discipline {
                 color: white;
@@ -4363,6 +4903,9 @@
             .peerless-ranking .card-type {
                 color: #b3b3b3;
             }
+            .peerless-ranking .card-support-duration .fas {
+			    color: #b3b3b3;
+			}
             .card-ranking {
                 position: absolute;
                 text-align: center;
@@ -4489,7 +5032,8 @@
                 font-size: 3px;
                 line-height: 5px;
             }
-            .scaleSmall .card-resource-cost {
+            .scaleSmall .card-resource-cost,
+            .scaleSmall .card-levelling-cost {
                 bottom: 15px;
             }
             .scaleSmall .support-type {
@@ -4498,6 +5042,15 @@
             .scaleSmall .card-support-motiv .fas:nth-child(2) {
                 right: 5px;
             }
+			.scaleSmall .support-levelling-effect .fas {
+			    font-size: 30px;
+			}
+			.scaleSmall .support-levelling-effect .fas:nth-child(1) {
+			    left: -15px;
+			}
+            .scaleSmall .support-levelling-effect .fas:nth-child(2) {
+			    right: -15px;
+			}
             .card-marker {
                 color: white;
                 position: absolute;
@@ -4538,7 +5091,8 @@
                 left: -34px;
             }
             .activeResource .cardFront div.card-number,
-            .activeResource .cardFront div.card-ranking,
+            .activeResource .cardFront div.card-ranking, 
+            .activeResource .cardFront div.card-levelling-cost,
             .activeResource .cardFront div.card-type,
             .activeResource .cardFront div.card-discipline,
             .activeResource .cardFront div.card-resource-currency,
