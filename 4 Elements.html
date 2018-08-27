@@ -2281,6 +2281,7 @@
             */
             var casterSelection,
                 resourceSelection,
+                supportSelection,
                 playerField,
                 cardAperture;
 
@@ -2742,9 +2743,16 @@
                     //Remove force nerfs
                     restoreForce();
 
-                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                    // Remove card tether reference
+                    jQuery('.card-aperture').removeClass('tetherCard'); 
 
-                    jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0'); // reset hitpoint reversal reference
+                    // Reset hitpoint reversal reference
+                    jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0');
+
+                	// Remove the activeCaster class on any caster cards lower down the stacking order (essential for Levelling Phases)
+                	if(jQuery('[data-battle-field="'+playerHand+'"] .in-play').find('.activeCaster').length > 1) {
+	                	jQuery('[data-battle-field="'+playerHand+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
+	                }
 
                     setTimeout(function(){
 
@@ -2805,7 +2813,7 @@
                     toggleDialogueBox(false,true);
 
                     cardAperture = jQuery('.tetherCard');
-                    casterSelection = jQuery('.in-play').find('.activeCaster');
+                    casterSelection = jQuery('.in-play').find('.activeCaster').last().addClass('returnSelection');
                     playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
 
                     removeFromPlay(casterSelection, playerField, cardAperture);
@@ -2898,11 +2906,6 @@
                     jQuery(cardAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('tetherCard'); // tether card to aperture for return reference if necessary
 
-                	// Remove the activeCaster class on any existing caster cards that may already be in play (essential for Levelling Phases)
-                	if(jQuery(placeholder).find('.activeCaster').length > 1) {
-	                	jQuery(placeholder).find('.activeCaster').not(':last').removeClass('activeCaster');
-	                }
-
                 }, 200);
 
                 // Determine charge limit
@@ -2959,7 +2962,7 @@
                 // Placing card
                 jQuery(casterSelection).removeClass('activeCaster activeCard').addClass('speedX2');
                 jQuery(casterSelection).css({'top':relativeTop,'left':relativeLeft,'width':cardApertureWidth,'height':cardApertureHeight}); // in motion
-                jQuery(casterSelection).clone().appendTo(cardAperture).removeClass('speedX2').addClass('inactiveCaster ghostCard'); // clone the modifeid card and add to in-play placeholder
+                jQuery(casterSelection).clone().appendTo(cardAperture).removeClass('speedX2 returnSelection').addClass('inactiveCaster ghostCard'); // clone the modifeid card and add to in-play placeholder
 
                 setTimeout(function(){
 
@@ -2969,11 +2972,6 @@
                     jQuery(cardAperture).removeClass('tetherCard open');
                     jQuery(inPlayAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('closed valid-for-selection'); // restore former aperture classes
-                    
-                	// Restore the activeCaster class on the last caster card that may already be in play (essential for Levelling Phases)
-                	if(!jQuery(placeholder).find('.card').last().hasClass('activeCaster')) {
-                		jQuery(placeholder).find('.card').last().addClass('activeCaster');
-                	}
 
                 }, 200);
 
@@ -3097,6 +3095,8 @@
 
                     // Determine if ranking is possible
                     if(supportLevellingPossibility()) { // check for support leveling cards
+
+                    	// TODO : call dialogue box to prompt player to proceed or skip, proceed to Levelling Phase if skipped
 
 	                    supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
 	                    formerPhase = 'resourceConfirmationPhase';
@@ -3584,7 +3584,7 @@
 	    					resourcePoolValue = Number(jQuery('[data-resource-field="'+playerField+'"] '+resourceDiscipline+' .resource-counter').attr('data-pool-wealth'));
 
 	    					// Determine if resource pool value is greater than levelling cost
-	    					if(resourcePoolValue > levellingCost) {
+	    					if(resourcePoolValue >= levellingCost) {
 
 	    						// Mark valid selection options
 	    						jQuery(this).closest('.card-aperture').addClass('valid-for-selection');
@@ -3599,6 +3599,133 @@
     				});
 
             	}
+
+            }
+
+            /*
+            **
+            ** Support Phase
+            **
+            */
+
+            function keySelectSupport() {
+
+                if(supportSelectionPhase || supportLevellingPhase) {
+
+                    cardAperture = jQuery('.valid-for-selection.focus');
+                    jQuery(cardAperture).find('.card').addClass('supportSelection');
+
+                    supportSelection = jQuery('.supportSelection');
+                    playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+
+                    confirmSupportSelection(supportSelection, playerField, cardAperture);
+
+                }
+
+            }
+
+            // Prompt player to confirm selection
+            function confirmSupportSelection(resourceSelection, playerField, cardAperture) {
+
+                // Move to resource pool
+                placeInSupport(supportSelection, playerField, cardAperture);
+                jQuery(cardAperture).removeClass('focus closed valid-for-selection').addClass('open');
+
+                dialogueBoxContent =    `<div class="confirm-hand">
+                                            Confirm Selection
+                                            <div class="confirm-options">
+                                                <div class="btn btn-confirm focus" data-confirm="true">Confirm</div>
+                                                <div class="btn btn-confirm" data-confirm="false">Reject</div>
+                                            </div>
+                                        </div>`;
+
+                if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
+                    jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
+                }
+
+                // call dialogue box
+                toggleDialogueBox(false,true);
+
+                if(previewSelectionPhase) {
+
+	                previewSelectionPhase = false; // disallow UI key navigation
+	            	formerPhase = 'previewSelectionPhase';
+
+	            } else if(supportSelectionPhase) {
+
+	                supportSelectionPhase = false; // disallow UI key navigation
+	            	formerPhase = 'supportSelectionPhase';
+
+	            } else if(supportLevellingPhase) {
+
+	                supportLevellingPhase = false; // disallow UI key navigation
+	            	formerPhase = 'supportLevellingPhase';
+
+	            }
+                supportConfirmationPhase = true; // allow key selection
+                currentPhase = 'supportConfirmationPhase';
+
+                // Update phase indicator
+                updatePhaseIndicator();
+
+            }
+
+            // Determine resource confirmation
+            function determineSupportConfirmation(confirmResource) {
+
+                // continue based on condition returned
+                if(confirmResource == 'true') { // player confirms resource
+
+                    toggleDialogueBox(false,true);
+
+                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                    jQuery('.resource').removeClass('poolingResource'); // remove resource pool reference
+                    jQuery('.resource-aperture').removeClass('activeResource'); // remove aperture reference
+
+                    // Remove resource value tags
+                    removeResourceValueTags();
+
+                    supportConfirmationPhase = false; // disallow UI key navigation
+
+                    // Unmark valid selection options
+                    unmarkValidSelections();
+
+                    // TODO : invoke support card effect, determine if support card is effective
+                    // Levelling: discard support card immediately after use (failure or success) if levelling support
+                    // Battle: discard support card after battle phase is over and hitpoint recalculations have resolved
+
+                } else if(confirmResource == 'false') { // player rescinds resource
+
+                    toggleDialogueBox(false,true);
+
+                    cardAperture = jQuery('.tetherCard');
+                    resourceSelection = jQuery('.resource').find('.activeResource');
+                    playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+
+                    removeFromPool(resourceSelection, playerField, cardAperture);
+
+                    supportConfirmationPhase = false; // disallow UI key navigation
+
+                    // TODO : determine phase to revert to (support or levelling support)
+
+                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+                    formerPhase = 'resourceConfirmationPhase';
+                    currentPhase = 'resourcePoolingPhase';
+
+                    // Update phase indicator
+                    updatePhaseIndicator();
+
+                    // Update and display phase guide
+                    guideInstruction = 'Select a valid support levelling card to place in play';
+                    updatePhaseGuide(guideInstruction,currentPhase);
+
+                    // Unmark valid selection options
+                    unmarkValidSelections();
+
+                    // Mark valid selection options
+                    markValidSelections('caster-card-type');
+
+                }
 
             }
 
@@ -4677,39 +4804,39 @@
             .cardFront div {
                 transition: .5s;
             }
-            .activeCaster .cardFront .card-number,
+            .in-play .cardFront .card-number,
             .activeCard .cardFront .card-number {
                 top: 20px;
                 left: 20px;
                 transform: scale(2);
             }
-            .activeCaster .cardFront .card-discipline,
+            .in-play .cardFront .card-discipline,
             .activeCard .cardFront .card-discipline {
                 top: 15px;
                 right: 20px;
                 transform: scale(2);
             }
-            .activeCaster .cardFront .card-resource-currency,
+            .in-play .cardFront .card-resource-currency,
             .activeCard .cardFront .card-resource-currency {
                 right: 5px;
                 top: 35px;
                 width: 15px;
             }
-            .activeCaster .cardFront .card-resource-currency .fas,
+            .in-play .cardFront .card-resource-currency .fas,
             .activeCard .cardFront .card-resource-currency .fas {
                 font-size: 10px;
                 line-height: 15px;
             }
-            .activeCaster .cardFront,
+            .in-play .cardFront,
             .activeCard .cardFront {
                 border-width: 10px;
                 border-radius: 10px;
             }
-            .activeCaster .cardFront .card-elemental-motif, 
-            .activeCaster .cardFront .card-force,
-            .activeCaster .cardFront .card-ranking,
-            .activeCaster .cardFront .card-type,
-            .activeCaster .cardFront .card-force-indicator,
+            .in-play .cardFront .card-elemental-motif, 
+            .in-play .cardFront .card-force,
+            .in-play .cardFront .card-ranking,
+            .in-play .cardFront .card-type,
+            .in-play .cardFront .card-force-indicator,
             .activeCard .cardFront .card-elemental-motif, 
             .activeCard .cardFront .card-force, 
             .activeCard .cardFront .card-ranking,
@@ -4717,12 +4844,12 @@
             .activeCard .cardFront .card-force-indicator {
                 transform: scale(2.3);
             }
-            .activeCaster .cardFront .card-type, 
+            .in-play .cardFront .card-type, 
             .activeCard .cardFront .card-type {
                 bottom: 20px;
                 font-size: 10px;
             }
-            .activeCaster .cardFront .card-ranking,
+            .in-play .cardFront .card-ranking,
             .activeCard .cardFront .card-ranking {
                 bottom: 90px;
             }
