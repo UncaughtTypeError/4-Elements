@@ -2294,7 +2294,7 @@
 
                     if(jQuery(this).find('.cardFront').hasClass(validType)) {
 
-                        jQuery(this).addClass('valid-for-selection');
+                        jQuery(this).addClass('valid-for-selection emphasize-selection');
 
                     } else {
 
@@ -2303,6 +2303,10 @@
                     }
 
                 });
+
+                setTimeout(function(){
+                	jQuery('.valid-for-selection').removeClass('emphasize-selection');
+                },300);
 
             }
 
@@ -2783,6 +2787,8 @@
 		                } else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1 || 
 	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1) {
 
+		                	resourceTransaction();
+
 		                    casterConfirmationPhase = false; // disallow UI key navigation
 		                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
 		                    formerPhase = 'casterConfirmationPhase';
@@ -2906,6 +2912,10 @@
                     jQuery(cardAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('tetherCard'); // tether card to aperture for return reference if necessary
 
+                    if(levellingPhase) {
+                    	jQuery(cardAperture).removeClass('emphasize-promotion');
+                    }
+
                 }, 200);
 
                 // Determine charge limit
@@ -2972,6 +2982,10 @@
                     jQuery(cardAperture).removeClass('tetherCard open');
                     jQuery(inPlayAperture).removeClass('placingCard');
                     jQuery(cardAperture).addClass('closed valid-for-selection'); // restore former aperture classes
+
+                    if(levellingPhase) {
+                    	jQuery(cardAperture).addClass('emphasize-promotion');
+                    }
 
                 }, 200);
 
@@ -3587,7 +3601,7 @@
 	    					if(resourcePoolValue >= levellingCost) {
 
 	    						// Mark valid selection options
-	    						jQuery(this).closest('.card-aperture').addClass('valid-for-selection');
+	    						jQuery(this).closest('.card-aperture').addClass('valid-for-selection emphasize-selection emphasize-promotion');
 
 	    						// Possible to promote rank
 	    						rankPromotion = true;
@@ -3597,6 +3611,10 @@
 	    				}
 
     				});
+
+	                setTimeout(function(){
+	                	jQuery('.valid-for-selection').removeClass('emphasize-selection');
+	                },300);
 
             	}
 
@@ -3726,6 +3744,110 @@
                     markValidSelections('caster-card-type');
 
                 }
+
+            }
+
+            /*
+            **
+            ** Resource transactions
+            **
+            */
+            var cardCost,
+            	cardCurrency,
+            	resourceDebit,
+            	resourceDebitPool,
+            	resourceReserveAdjusted;
+
+            // Calculate and debit resource transactions for support and levelling costs
+            function resourceTransaction() {
+
+            	if(levellingPhase) {
+
+            		// Determine cardCurrency by discipline type of caster card
+	            	if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .cardFront').hasClass('areo-motiv')) {
+
+	            		cardCurrency = '.resource-aero';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .cardFront').hasClass('terra-motiv')) {
+
+	            		cardCurrency = '.resource-terra';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .cardFront').hasClass('hydro-motiv')) {
+
+	            		cardCurrency = '.resource-hydro';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .cardFront').hasClass('pyro-motiv')) {
+
+	            		cardCurrency = '.resource-pyro';
+
+	            	}
+
+	            	cardCost = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card .levelling-cost').attr('data-levelling-cost'));
+
+	            } else if(supportLevellingPhase || supportSelectionPhase) {
+
+	            	// Determine cardCurrency by discipline type of support card if applicable
+	            	if(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .cardFront').hasClass('areo-motiv')) {
+
+	            		cardCurrency = '.resource-aero';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .cardFront').hasClass('terra-motiv')) {
+
+	            		cardCurrency = '.resource-terra';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .cardFront').hasClass('hydro-motiv')) {
+
+	            		cardCurrency = '.resource-hydro';
+
+	            	} else if(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .cardFront').hasClass('pyro-motiv')) {
+
+	            		cardCurrency = '.resource-pyro';
+
+	            	} else {
+
+	            		cardCurrency = false;
+					
+					}
+
+	            	cardCost = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .card .resource-cost').attr('data-resource-cost'));
+
+	            }
+
+	            if(!cardCurrency) {
+
+            		resourceDebit = Number(jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth'));
+
+            		resourceReserveAdjusted = resourceDebit - cardCost;
+
+            		// Update resource reserves
+            		jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth',resourceReserveAdjusted);
+
+            		// visually adjust the resource counter
+
+            		setTimeout(function(){
+
+            			// Discard spent card/resource
+            			// determine if card needs to be emptied from resource pool and discarded to dead pile after visual adjustments to resource counters have completed
+
+            			// Manage active resource pools
+            			jQuery('[data-resource-field="'+playerField+'"]').find('.activeResource').each(function(){
+
+            				// Remove active class if resource pool is empty
+	            			if(jQuery(this).children().length <= 0 && jQuery(this).find('.resource-counter').attr('data-pool-wealth') <= 0) {
+	            				jQuery(this).removeClass('activeResource');
+	            			}
+
+            			};
+
+            		},500);
+
+            	} else {
+
+            		// cardCurrency is false, find the resource pool with the largest sum of wealth for debit
+
+            	}
+
+            	// TODO : calculate and debit resource transactions for support and levelling costs
 
             }
 
@@ -4800,6 +4922,7 @@
                 right: 0;
                 border: 3px solid #404040;
                 border-radius: 5px;
+                overflow: hidden;
             }
             .cardFront div {
                 transition: .5s;
@@ -5195,6 +5318,29 @@
                 height: 25px;
                 width: 0;
             }
+            .emphasize-selection .card {
+                transform: scale(1.05);
+            }
+            .emphasize-promotion .cardFront:after {
+				animation: shine 5s ease-in-out infinite;
+				animation-fill-mode: forwards;  
+				content: "";
+				position: absolute;
+				top: -150%;
+				left: -200%;
+				width: 340%;
+				height: 180%;
+				opacity: 0;
+				transform: rotate(50deg);
+				background: rgba(255, 255, 255, 0.13);
+				background: linear-gradient(
+					to right, 
+					rgba(255, 255, 255, 0.13) 0%,
+					rgba(255, 255, 255, 0.13) 77%,
+					rgba(255, 255, 255, 0.5) 92%,
+					rgba(255, 255, 255, 0.0) 100%
+				);
+			}
             .valid-for-selection .card-marker {
                 width: 95px;
                 padding: 5px 10px;
@@ -6020,6 +6166,15 @@
             .btn.focus {
                 box-shadow: 0px 0px 5px 2px grey;
             }
+            .turnCard.focus {
+			    transform: translateY(-10px);
+			}
+			.field[data-field="ai-field"] .card-aperture.closed.focus {
+			    transform: translateY(5px);
+			}
+			.field[data-field="player-field"] .card-aperture.closed.focus {
+			    transform: translateY(-5px);
+			}
             .card-aperture {
                 width: 150px;
                 height: 250px;
@@ -6029,6 +6184,7 @@
                 border-radius: 8px;
                 position: relative;
                 z-index: 2;
+                transition: .5s;
             }
             .card-aperture:before {
                 content: "Card";
@@ -6558,18 +6714,34 @@
             .display-resource-value.aero-tag {
                 background: #f1c40f;
                 color: #404040;
+    			animation: aeroPulse 2s infinite;
+    			-webkit-animation: aeroPulse 2s infinite;
+    			-moz-animation: aeroPulse 2s infinite;
+    			-o-animation: aeroPulse 2s infinite;
             }
             .display-resource-value.terra-tag {
                 background: #27ae60;
                 color: white;
+    			animation: terraPulse 2s infinite;
+    			-webkit-animation: terraPulse 2s infinite;
+    			-moz-animation: terraPulse 2s infinite;
+    			-o-animation: terraPulse 2s infinite;
             }
             .display-resource-value.hydro-tag {
                 background: #3498db;
                 color: white;
+    			animation: hydroPulse 2s infinite;
+    			-webkit-animation: hydroPulse 2s infinite;
+    			-moz-animation: hydroPulse 2s infinite;
+    			-o-animation: hydroPulse 2s infinite;
             }
             .display-resource-value.pyro-tag {
                 background: #c0392b;
                 color: white;
+    			animation: pyroPulse 2s infinite;
+    			-webkit-animation: pyroPulse 2s infinite;
+    			-moz-animation: pyroPulse 2s infinite;
+    			-o-animation: pyroPulse 2s infinite;
             }
             /* || Dialogue Boxes */
             .dialogueBox {
@@ -6788,6 +6960,139 @@
             .speedX7 {
                 transition: .7s;
             }
+            /* || Animations */
+            @-webkit-keyframes aeroPulse {
+			  0% {
+			    -webkit-box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7);
+			  }
+			  70% {
+		      	-webkit-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+			@keyframes aeroPulse {
+			  0% {
+			    -moz-box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7);
+			    box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7);
+			  }
+			  70% {
+		      	-moz-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-moz-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+            @-webkit-keyframes terraPulse {
+			  0% {
+			    -webkit-box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+			  }
+			  70% {
+		      	-webkit-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+			@keyframes terraPulse {
+			  0% {
+			    -moz-box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+			    box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+			  }
+			  70% {
+		      	-moz-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-moz-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+            @-webkit-keyframes hydroPulse {
+			  0% {
+			    -webkit-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+			  }
+			  70% {
+		      	-webkit-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+			@keyframes hydroPulse {
+			  0% {
+			    -moz-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+			    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+			  }
+			  70% {
+		      	-moz-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-moz-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+            @-webkit-keyframes pyroPulse {
+			  0% {
+			    -webkit-box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7);
+			  }
+			  70% {
+		      	-webkit-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+			@keyframes pyroPulse {
+			  0% {
+			    -moz-box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7);
+			    box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7);
+			  }
+			  70% {
+		      	-moz-box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+			  }
+			  100% {
+		      	-moz-box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+		      	box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+			  }
+			}
+			@-webkit-keyframes shine {
+			  10% {
+			    opacity: 1;
+			    top: -30%;
+			    left: -30%;
+			    transition-property: left, top, opacity;
+			    transition-duration: 0.7s, 0.7s, 0.15s;
+			    transition-timing-function: ease;
+			  }
+			  100% {
+			    opacity: 0;
+			    top: -30%;
+			    left: -30%;
+			    transition-property: left, top, opacity;
+			  }
+			}
+			@keyframes shine {
+			  10% {
+			    opacity: 1;
+			    top: -30%;
+			    left: -30%;
+			    transition-property: left, top, opacity;
+			    transition-duration: 0.7s, 0.7s, 0.15s;
+			    transition-timing-function: ease;
+			  }
+			  100% {
+			    opacity: 0;
+			    top: -30%;
+			    left: -30%;
+			    transition-property: left, top, opacity;
+			  }
+			}
         </style>
     </body>
 </html>
