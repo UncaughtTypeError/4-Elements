@@ -2644,7 +2644,7 @@
                     	hitpointPercentile = jQuery(hitpointComponent).find('.activePercentile').length ? Number(jQuery(hitpointComponent).find('.activePercentile').text()) : 0;
                         hitpointPercentileIteration = 0;
 
-                    // Timed loop: add 10 hitpoint percentiles for the limit defined
+                    // Timed loop: add x10 hitpoint percentiles for the limit defined
                     var intervalID = setInterval(function(){
 
                        if(hitpointPercentileIteration === limit){ // clear interval when iteration limit is reached
@@ -2688,7 +2688,7 @@
 
                     // Determine if 
 
-                    // Timed loop: deduct 10 hitpoint percentiles for the limit defined
+                    // Timed loop: deduct x10 hitpoint percentiles for the limit defined
                     var intervalID = setInterval(function(){
 
                        if(hitpointPercentileIteration === limit){ // clear interval when iteration limit is reached
@@ -3752,11 +3752,15 @@
             ** Resource transactions
             **
             */
-            var cardCost,
-            	cardCurrency,
-            	resourceDebit,
-            	resourceDebitPool,
-            	resourceReserveAdjusted;
+            var cardCost,							// cost of support or levelling action
+            	cardCurrency,						// card resource currency determined by discipline type
+            	cardResource,						// card resource value
+            	cardResourceAdjusted, 				// adjusted resource of the card, used to determine remaining resource after deductions
+            	resourcePoolTotal,					// total pool wealth 
+            	resourcePoolAdjusted,				// adjusted resource pool total
+            	resourcePoolArray,					// array of all pool totals, used when no specific currency is required
+            	resourcePoolMax,					// maximum total extracted from resource pool array, used to find the resource pool with the highest balance to debit from
+            	resourceAdjustmentIteration = 0;	// iteration counter for visual adjustments to pool totals
 
             // Calculate and debit resource transactions for support and levelling costs
             function resourceTransaction() {
@@ -3815,35 +3819,195 @@
 
 	            if(!cardCurrency) {
 
-            		resourceDebit = Number(jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth'));
+            		resourcePoolTotal = Number(jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth'));
 
-            		resourceReserveAdjusted = resourceDebit - cardCost;
+            		resourcePoolAdjusted = resourcePoolTotal - cardCost;
 
             		// Update resource reserves
-            		jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth',resourceReserveAdjusted);
+            		jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth',resourcePoolAdjusted);
 
-            		// visually adjust the resource counter
+            		// Visually adjust the resource counter
+            		// Timed loop: deduct x1 resource point for the limit defined
+                    var intervalID = setInterval(function(){
 
-            		setTimeout(function(){
+                       if(resourceAdjustmentIteration === cardCost) { // clear interval when iteration limit is reached
+                          
+                          clearInterval(intervalID);
 
-            			// Discard spent card/resource
-            			// determine if card needs to be emptied from resource pool and discarded to dead pile after visual adjustments to resource counters have completed
+                          // Manage active resource pools
+                          manageResourcePools(cardCurrency,cardCost,resourcePoolTotal);
 
-            			// Manage active resource pools
-            			jQuery('[data-resource-field="'+playerField+'"]').find('.activeResource').each(function(){
+                       }
 
-            				// Remove active class if resource pool is empty
-	            			if(jQuery(this).children().length <= 0 && jQuery(this).find('.resource-counter').attr('data-pool-wealth') <= 0) {
-	            				jQuery(this).removeClass('activeResource');
-	            			}
+                       var timeoutID = setTimeout(function(){ 
 
-            			};
+                            jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').text(resourcePoolTotal);
+                            resourcePoolTotal-=1;
 
-            		},500);
+                       }, 100);
 
-            	} else {
+                       resourceAdjustmentIteration++;
 
-            		// cardCurrency is false, find the resource pool with the largest sum of wealth for debit
+                    }, 100);
+
+            	} else { // cardCurrency is false, find the resource pool with the largest sum of wealth for debit
+
+            		deductFromHighestResource();
+
+            		// Visually adjust the resource counter
+            		// Timed loop: deduct x1 resource point for the limit defined
+                    var intervalID = setInterval(function(){
+
+                       if(resourceAdjustmentIteration === cardCost || resourceAdjustmentIteration === resourcePoolTotal) { // clear interval when iteration limit is reached
+                          
+	                      clearInterval(intervalID);
+
+	                      // Manage active resource pools
+	                      manageResourcePools(cardCurrency,cardCost,resourcePoolTotal);
+
+	                      // Determine if balance still needs to be settled
+	                      if(cardCost > 0) {
+
+	                      	// Proceed to next resource pool
+	                      	deductFromHighestResource();
+
+	                      }
+
+                       }
+
+                       var timeoutID = setTimeout(function(){ 
+
+                            jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').text(resourcePoolTotal);
+                            resourcePoolTotal-=1;
+
+                       }, 100);
+
+                       resourceAdjustmentIteration++;
+
+                    }, 100);
+
+            	}
+
+            	// Manage active resource pools
+        		function manageResourcePools(currency,cost,poolTotal) {
+
+        			// Discard spent card/resource
+        			jQuery('[data-resource-field="'+playerField+'"] '+currency+' .card').each(function(){
+
+        				if(cost > 0) { // continue until total cost has been deducted
+
+        					// Determine if resource has already been reduced
+        					if(jQuery(this).is('[data-resource-remaining]')) {
+        						cardResource = jQuery(this).attr('data-resource-remaining');
+        					} else {
+        						cardResource = jQuery(this).attr('data-resource-currency');
+        					}
+
+        					// Check cards in pool
+	        				if(cardResource <= cost || poolTotal == cost) { // determine if card resource is less than cost or if the remaining pool total equals cost
+
+	        					jQuery(this).addClass('discardCard');
+
+	        					console.log('card should be discarded');
+
+	        					// Discard card
+	        					discardCard();
+
+	        					// Update remaining cost for following iteration
+	        					cost -= cardResource;
+
+	        				} else if(cardResource > cost) { // resource is greater than remaining cost, reference remaining resource for future deductions
+
+	        					cardResourceAdjusted = cardResource - cost;
+
+	        					// Account for remaining resource after cost deduction
+	        					jQuery(this).attr('data-resource-remaining',cardResourceAdjusted);
+
+	        				}
+
+	        			} else {
+        					return;
+        				}
+
+        			});
+
+        			// Manage active resource pools
+        			jQuery('[data-resource-field="'+playerField+'"]').find('.activeResource').each(function(){
+
+        				// Remove active class if resource pool is empty
+            			if(jQuery(this).children().length <= 0 && jQuery(this).find('.resource-counter').attr('data-pool-wealth') <= 0) {
+
+            				jQuery(this).removeClass('activeResource');
+
+            			}
+
+        			});
+
+        		}
+
+        		// Find resource pool with highest value for cost deductions
+        		function deductFromHighestResource() {
+
+            		resourcePoolTotal = [];
+
+            		// Push all values from active resource pools to array
+            		jQuery('[data-resource-field="'+playerField+'"] .activePool').each(function(){
+
+            			resourcePoolArray.push(Number(jQuery(this).find('.resource-counter').attr('data-pool-wealth')));
+
+            			console.log(resourcePoolArray);
+
+            		});
+
+            		Array.max = function( array ){
+					    return Math.max.apply( Math, array );
+					};
+
+					// Retrieve the highest value from array
+					resourcePoolMax = Array.max(resourcePoolArray);
+
+					// Retrieve resource pool with matching max value from array and start from there
+            		jQuery('[data-resource-field="'+playerField+'"] .activePool').each(function(){
+
+            			if(jQuery(this).find('.resource-counter').attr('data-pool-wealth') == resourcePoolMax) {
+
+		            		// Determine cardCurrency by currency of resource card
+			            	if(jQuery(this).hasClass('areo-motiv')) {
+
+			            		cardCurrency = '.resource-aero';
+
+			            	} else if(jQuery(this).hasClass('terra-motiv')) {
+
+			            		cardCurrency = '.resource-terra';
+
+			            	} else if(jQuery(this).hasClass('hydro-motiv')) {
+
+			            		cardCurrency = '.resource-hydro';
+
+			            	} else if(jQuery(this).hasClass('pyro-motiv')) {
+
+			            		cardCurrency = '.resource-pyro';
+
+			            	}
+
+            			}
+
+            		});
+
+            		resourcePoolTotal = Number(jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth'));
+
+            		resourcePoolAdjusted = resourcePoolTotal - cardCost;
+
+            		if(resourcePoolAdjusted < 0) {
+
+            			// Adjust cardCost to account for resource deduction
+            			cardCost *= resourcePoolAdjusted; // expecting negative value for resourcePoolAdjusted
+            			resourcePoolAdjusted = 0;
+
+            		}
+            					
+            		// Update resource reserves
+            		jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth',resourcePoolAdjusted);
 
             	}
 
