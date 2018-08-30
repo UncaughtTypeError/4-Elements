@@ -1737,10 +1737,12 @@
                                 return (className.match (/(^|\s)clone-iteration-\S+/g) || []).join(' ');
                             });
                             jQuery(current_discardingCard).css({'top':relativeTop,'left':relativeLeft,'width':deadPileWidth,'height':deadPileHeight}); // in motion
-                            jQuery(current_discardingCard).clone().appendTo(deadPile).removeClass('speedX2').addClass('ghostCard discard-iteration-'+i); // clone the modifeid card and add to dead pile
+                            jQuery(current_discardingCard).clone().appendTo(deadPile).removeClass('speedX2').addClass('ghostCard deadCard discard-iteration-'+i); // clone the modifeid card and add to dead pile
                             current_clonedCard = jQuery('.discard-iteration-'+i);
 
                             setTimeout(function(){
+
+                            	console.log(jQuery(current_aperture).attr('class'));
 
                                 jQuery(current_discardingCard).remove();
                                 jQuery(current_clonedCard).css({'top':'0','left':'0'}); // lock in position
@@ -2754,14 +2756,13 @@
                     jQuery('[data-battle-field="'+playerField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0');
 
                 	// Remove the activeCaster class on any caster cards lower down the stacking order (essential for Levelling Phases)
-                	if(jQuery('[data-battle-field="'+playerHand+'"] .in-play').find('.activeCaster').length > 1) {
-	                	jQuery('[data-battle-field="'+playerHand+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
+                	if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.activeCaster').length > 1) {
+	                	jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
 	                }
 
                     setTimeout(function(){
 
-	                    if(formerPhase == 'casterSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0 || 
-	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0) {
+	                    if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length == 1) {
 
 		                    casterConfirmationPhase = false; // disallow UI key navigation
 		                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
@@ -2784,13 +2785,12 @@
 		                    // Display resource value tags
 		                    displayResourceValueTags();
 
-		                } else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1 || 
-	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 1) {
+		                } else if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length > 1) {
 
-		                	resourceTransaction();
+		                	resourceTransaction('levellingPhase');
 
 		                    casterConfirmationPhase = false; // disallow UI key navigation
-		                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+		                    /*levellingPhase = true; // start resource pooling phase and allow UI key navigation
 		                    formerPhase = 'casterConfirmationPhase';
 		                    currentPhase = 'resourcePoolingPhase';
 
@@ -3763,9 +3763,11 @@
             	resourceAdjustmentIteration = 0;	// iteration counter for visual adjustments to pool totals
 
             // Calculate and debit resource transactions for support and levelling costs
-            function resourceTransaction() {
+            function resourceTransaction(phase) {
 
-            	if(levellingPhase) {
+            	console.log('resource transaction');
+
+            	if(phase == 'levellingPhase') {
 
             		// Determine cardCurrency by discipline type of caster card
 	            	if(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .cardFront').hasClass('areo-motiv')) {
@@ -3788,7 +3790,7 @@
 
 	            	cardCost = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card .levelling-cost').attr('data-levelling-cost'));
 
-	            } else if(supportLevellingPhase || supportSelectionPhase) {
+	            } else if(phase == 'supportLevellingPhase' || phase == 'supportSelectionPhase') {
 
 	            	// Determine cardCurrency by discipline type of support card if applicable
 	            	if(jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component .cardFront').hasClass('areo-motiv')) {
@@ -3817,7 +3819,9 @@
 
 	            }
 
-	            if(!cardCurrency) {
+	            if(cardCurrency != false) {
+
+	            	console.log('cardCurrency '+cardCurrency);
 
             		resourcePoolTotal = Number(jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').attr('data-pool-wealth'));
 
@@ -3851,6 +3855,8 @@
                     }, 100);
 
             	} else { // cardCurrency is false, find the resource pool with the largest sum of wealth for debit
+
+	            	console.log('cardCurrency '+cardCurrency);
 
             		deductFromHighestResource();
 
@@ -3948,14 +3954,14 @@
         		// Find resource pool with highest value for cost deductions
         		function deductFromHighestResource() {
 
-            		resourcePoolTotal = [];
+            		resourcePoolArray = [];
 
             		// Push all values from active resource pools to array
             		jQuery('[data-resource-field="'+playerField+'"] .activePool').each(function(){
 
             			resourcePoolArray.push(Number(jQuery(this).find('.resource-counter').attr('data-pool-wealth')));
 
-            			console.log(resourcePoolArray);
+            			console.log('resourcePoolArray '+resourcePoolArray);
 
             		});
 
@@ -4443,6 +4449,62 @@
                 setTimeout(function(){
                     jQuery('.preview-pane-component').removeClass('preview-pane-delay')
                 },1000);
+
+            }
+
+            /*
+            **
+            ** Discard Card
+            **
+            */
+
+            // Discard card
+            function discardCard() {
+
+                // get co-ordinates and dimensions of the dead pile
+                var deadPile = jQuery(playerHand).find('.dead-pile');
+                    deadPileOffset = jQuery(deadPile).offset(),
+                    deadPileTop = deadPileOffset.top,
+                    deadPileLeft = deadPileOffset.left,
+                    deadPileWidth = jQuery(deadPile).outerHeight(),
+                    deadPileHeight = jQuery(deadPile).outerWidth();
+
+                var current_discardingCard = jQuery('.discardCard'), // store to variable
+                	current_aperture = jQuery(current_discardingCard).parent(),
+                    current_clonedCard;
+
+                // Epheremal state handler
+                jQuery(current_aperture).addClass('placingCard');
+
+                // Retrieve co-ordinates and dimensions of card aperture
+                var cardApertureOffset = jQuery(current_aperture).offset(),
+                    cardApertureTop = cardApertureOffset.top,
+                    cardApertureLeft = cardApertureOffset.left;
+
+                // Set relative co-ordinates
+                var relativeTop = deadPileTop - cardApertureTop,
+                    relativeLeft = deadPileLeft - cardApertureLeft;
+
+                // Remove classes
+                jQuery(current_discardingCard).removeClass('activeCard activeCaster activeResource');
+                jQuery(current_discardingCard).removeClass(function (index, className) { // remove the clone iteration reference
+                    return (className.match (/(^|\s)clone-iteration-\S+/g) || []).join(' ');
+                });
+
+                // Discarding card
+                jQuery(current_discardingCard).addClass('idleCard scaleSmall speedX2');
+                jQuery(current_discardingCard).css({'top':relativeTop,'left':relativeLeft,'width':deadPileWidth,'height':deadPileHeight}); // in motion
+                jQuery(current_discardingCard).clone().appendTo(deadPile).removeClass('speedX2 discardCard').addClass('ghostCard deadCard'); // clone the modifeid card and add to dead pile
+                current_clonedCard = jQuery('.deadCard');
+
+                setTimeout(function(){
+
+                    jQuery(current_discardingCard).remove();
+                    jQuery(current_clonedCard).css({'top':'0','left':'0'}); // lock in position
+                    jQuery(current_clonedCard).removeClass('ghostCard');
+                    jQuery(current_aperture).removeClass('placingCard');
+
+                }, 200);
 
             }
 
@@ -5486,8 +5548,8 @@
                 transform: scale(1.05);
             }
             .emphasize-promotion .cardFront:after {
-				animation: shine 5s ease-in-out infinite;
-				animation-fill-mode: forwards;  
+				animation: shine 3s ease-in-out infinite;
+				animation-fill-mode: forwards;
 				content: "";
 				position: absolute;
 				top: -150%;
@@ -5499,7 +5561,7 @@
 				background: rgba(255, 255, 255, 0.13);
 				background: linear-gradient(
 					to right, 
-					rgba(255, 255, 255, 0.13) 0%,
+					rgba(255, 255, 255, 0) 0%,
 					rgba(255, 255, 255, 0.13) 77%,
 					rgba(255, 255, 255, 0.5) 92%,
 					rgba(255, 255, 255, 0.0) 100%
@@ -7231,7 +7293,7 @@
 			    top: -30%;
 			    left: -30%;
 			    transition-property: left, top, opacity;
-			    transition-duration: 0.7s, 0.7s, 0.15s;
+			    transition-duration: 0.7s, 0.7s, 0.1s;
 			    transition-timing-function: ease;
 			  }
 			  100% {
@@ -7247,7 +7309,7 @@
 			    top: -30%;
 			    left: -30%;
 			    transition-property: left, top, opacity;
-			    transition-duration: 0.7s, 0.7s, 0.15s;
+			    transition-duration: 0.7s, 0.7s, 0.1s;
 			    transition-timing-function: ease;
 			  }
 			  100% {
