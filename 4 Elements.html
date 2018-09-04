@@ -244,6 +244,7 @@
                 casterConfirmationPhase     = false,                // prompt player to confirm or reject caster selection
                 resourceConfirmationPhase   = false,                // prompt player to confirm or reject resource selection
                 supportConfirmationPhase   	= false,                // prompt player to confirm or reject support selection
+                proceedConfirmationPhase   	= false,                // prompt player to proceed to next given phase
                 handBrowsingPhase           = false,                // allow player to browse hand
                 previewSelectionPhase       = false,                // allow player to preview card
             // Notices
@@ -623,7 +624,15 @@
             // dismiss with mouse
             jQuery('.wrapper').on('click', '.dialogueBox-backdrop, .dialogueBox-dismiss', function(){
 
-                if(currentPhase == 'handConfirmationPhase') {
+            	// Determine progression based on current phase
+            	afterDialogueBoxDismissal();
+
+            });
+
+            // Proceed with relevant phase after dialogue box dismissal
+            function afterDialogueBoxDismissal() {
+
+                if(handConfirmationPhase) {
 
                     // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
                     toggleDialogueBox(false,false);
@@ -681,8 +690,9 @@
 
                     }
 
-                } else if(currentPhase == 'casterConfirmationPhase') { 
+                } else if(casterConfirmationPhase) { 
 
+                	// end caster confirmation phase, proceed to resource pooling phase
                     toggleDialogueBox(false,false);
 
                     casterConfirmationPhase = false; // disallow UI key navigation
@@ -706,7 +716,7 @@
                     // Display resource value tags
                     displayResourceValueTags();
 
-                } else if(currentPhase == 'resourceConfirmationPhase') { 
+                } else if(resourceConfirmationPhase) { 
 
                     toggleDialogueBox(false,false);
 
@@ -728,11 +738,15 @@
                     // Mark valid selection options
                     markValidSelections('caster-card-type');*/
 
+                } else if(proceedConfirmationPhase) {
+
+                    toggleDialogueBox(false,false);
+
                 } else {
                     toggleDialogueBox(false,false);
                 }
 
-            });
+            }
 
             // Confirm with mouse
             jQuery('.dialogueBox').on('click','.btn-confirm',function(){
@@ -760,6 +774,12 @@
                     var confirmSupport = jQuery(this).attr('data-confirm');
 
                     determineSupportConfirmation(confirmSupport);
+
+                } else if(proceedConfirmationPhase) {
+
+                    var confirmProgression = jQuery(this).attr('data-confirm');
+
+                    determineProgressionConfirmation(confirmProgression);
 
                 }
 
@@ -797,6 +817,12 @@
                     var confirmSupport = jQuery('.btn-confirm.focus').attr('data-confirm');
 
                     determineSupportConfirmation(confirmSupport);
+
+                } else if(proceedConfirmationPhase) {
+
+                    var confirmProgression = jQuery('.btn-confirm.focus').attr('data-confirm');
+
+                    determineProgressionConfirmation(confirmProgression);
 
                 }
 
@@ -1509,7 +1535,7 @@
                 invalidDrawNotice = true; // allow key selection
 
                 dialogueBoxContent =    `<div class="invalid-draw-notice">
-                                            Invalid Draw
+                                            <div class="dialogue-box-notice-emphasis">Invalid Draw</div>
                                             <div class="dialogue-box-notice-detail">
                                                 No valid caster cards detected.
                                             </div>
@@ -1577,7 +1603,7 @@
             // Confirm or discard hand
             function handConfirmation(playerHand) {
 
-                dialogueBoxContent =    `<div class="confirm-hand">
+                dialogueBoxContent =    `<div class="confirmation-prompt">
                                             Confirm Draw
                                             <div class="confirm-options">
                                                 <div class="btn btn-confirm focus" data-confirm="true">Accept Hand</div>
@@ -1608,7 +1634,7 @@
             // Determine player confirmation
             function determineHandConfirmation(playerHand,handPermanence) {
 
-                // continue based on condition returned
+                // Continue based on condition returned
                 if(handPermanence == 'true') { // player accepts hand
 
                     // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
@@ -2586,7 +2612,7 @@
 
                 setTimeout(function(){
 
-                    dialogueBoxContent =    `<div class="confirm-hand">
+                    dialogueBoxContent =    `<div class="confirmation-prompt">
                                                 Confirm Selection
                                                 <div class="confirm-options">
                                                     <div class="btn btn-confirm focus" data-confirm="true">Accept Caster</div>
@@ -2740,7 +2766,7 @@
             // Determine caster confirmation
             function determineCasterConfirmation(confirmCaster) {
 
-                // continue based on condition returned
+                // Continue based on condition returned
                 if(confirmCaster == 'true') { // player accepts caster
 
                     toggleDialogueBox(false,true);
@@ -3052,7 +3078,7 @@
                 placeInPool(resourceSelection, playerField, cardAperture);
                 jQuery(cardAperture).removeClass('focus closed valid-for-selection').addClass('open');
 
-                dialogueBoxContent =    `<div class="confirm-hand">
+                dialogueBoxContent =    `<div class="confirmation-prompt">
                                             Confirm Selection
                                             <div class="confirm-options">
                                                 <div class="btn btn-confirm focus" data-confirm="true">Confirm</div>
@@ -3089,7 +3115,7 @@
             // Determine resource confirmation
             function determineResourceConfirmation(confirmResource) {
 
-                // continue based on condition returned
+                // Continue based on condition returned
                 if(confirmResource == 'true') { // player confirms resource
 
                     toggleDialogueBox(false,true);
@@ -3102,6 +3128,7 @@
                     removeResourceValueTags();
 
                     resourceConfirmationPhase = false; // disallow UI key navigation
+		            formerPhase = 'resourceConfirmationPhase';
 
                     // Unmark valid selection options
                     unmarkValidSelections();
@@ -3109,28 +3136,41 @@
                     // Determine if ranking is possible
                     if(supportLevellingPossibility()) { // check for support leveling cards
 
-	                    supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
-	                    formerPhase = 'resourceConfirmationPhase';
-	                    currentPhase = 'supportLevellingPhase';
+                    	// Allow enough time for previouse dialogue box to dismiss
+                    	setTimeout(function(){
 
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
+	                    	dialogueBoxContent =    `<div class="confirmation-prompt">
+				                                        <div class="dialogue-box-notice-emphasis">Leverage Levelling Support?</div>
+				                                        <div class="dialogue-box-notice-detail">
+				                                            Would you like to use the levelling support card detected in your hand?
+				                                        </div>
+				                                        <div class="confirm-options">
+				                                            <div class="btn btn-confirm focus" data-confirm="true">Yes</div>
+				                                            <div class="btn btn-confirm" data-confirm="false">No</div>
+				                                        </div>
+				                                    </div>`;
 
-	                    // Update and display phase guide
-	                    guideInstruction = 'Select a valid support levelling card to place in play';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
+				            if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
+				                jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
+				            }
 
-                        // Mark valid selection options
-                        markValidSelections('levelling-card-type');
+				            // call dialogue box
+				            toggleDialogueBox(false,true);
 
-                        // Prepare support card aperture
-                    	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
-                		jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
+				        },500);
+
+			            // Dismiss the current phase guide
+			            dismissPhaseGuide();
+
+			            proceedConfirmationPhase = true; // allow key selection
+			            currentPhase = 'proceedConfirmationPhase';
+
+			            // Update phase indicator
+			            updatePhaseIndicator();
 
                     } else if(promoteRankPossibility()) { // check for standard levelling requirements
 
 	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
-	                    formerPhase = 'resourceConfirmationPhase';
 	                    currentPhase = 'levellingPhase';
 
 	                    // Update phase indicator
@@ -3143,7 +3183,6 @@
 	                } else { // rank promotion not possible, proceed to Support Phase
 
 	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
-	                    formerPhase = 'resourceConfirmationPhase';
 	                    currentPhase = 'supportSelectionPhase';
 
 	                    // Update phase indicator
@@ -3649,7 +3688,7 @@
                 placeInSupport(supportSelection, playerField, cardAperture);
                 jQuery(cardAperture).removeClass('focus closed valid-for-selection').addClass('open');
 
-                dialogueBoxContent =    `<div class="confirm-hand">
+                dialogueBoxContent =    `<div class="confirmation-prompt">
                                             Confirm Selection
                                             <div class="confirm-options">
                                                 <div class="btn btn-confirm focus" data-confirm="true">Confirm</div>
@@ -3688,10 +3727,10 @@
 
             }
 
-            // Determine resource confirmation
+            // Determine support confirmation
             function determineSupportConfirmation(confirmSupport) {
 
-                // continue based on condition returned
+                // Continue based on condition returned
                 if(confirmSupport == 'true') { // player confirms support
 
                     toggleDialogueBox(false,true);
@@ -4592,6 +4631,69 @@
 
             /*
             **
+            ** Progression Confirmation
+            **
+            */
+
+            function determineProgressionConfirmation(confirmProgression) {
+
+                // Continue based on condition returned
+                if(confirmProgression == 'true') { // player accepts support levelling
+
+                    toggleDialogueBox(false,true);
+
+                	if(formerPhase == 'resourceConfirmationPhase') {
+
+		                supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
+		                currentPhase = 'supportLevellingPhase';
+
+		                // Update phase indicator
+		                updatePhaseIndicator();
+
+		                // Update and display phase guide
+		                guideInstruction = 'Select a valid support levelling card to place in play';
+		                updatePhaseGuide(guideInstruction,currentPhase);
+
+		                // Mark valid selection options
+		                markValidSelections('levelling-card-type');
+
+		                // Prepare support card aperture
+		            	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+		        		jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
+
+		        	}
+
+	        	} else if(confirmProgression == 'false') { // player rejects support levelling
+
+                    toggleDialogueBox(false,true);
+
+                	if(formerPhase == 'resourceConfirmationPhase') {
+
+		        		// Determine if standard levelling is possible
+		        		if(promoteRankPossibility()) { // check for standard levelling requirements
+
+		                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
+		                    currentPhase = 'levellingPhase';
+
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
+
+		                    // Update and display phase guide
+		                    guideInstruction = 'Select a valid caster card to promote to';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
+
+		                } else { // rank promotion not possible,
+
+		                }
+
+		            }
+
+	        	}
+
+            }
+
+            /*
+            **
             ** Discard Card
             **
             */
@@ -4769,7 +4871,7 @@
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
                                 callbackFunction    = keyConfirmation,
-                                returnFunction      = toggleDialogueBox,
+                                returnFunction      = afterDialogueBoxDismissal,
                                 applicableEl        = '.btn-confirm',
                                 notApplicableEl     = '';
 
@@ -4778,7 +4880,16 @@
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
                                 callbackFunction    = keyConfirmation,
-                                returnFunction      = toggleDialogueBox,
+                                returnFunction      = afterDialogueBoxDismissal,
+                                applicableEl        = '.btn-confirm',
+                                notApplicableEl     = '';
+
+                        } else if (proceedConfirmationPhase) {
+
+                            var elClass             = '.btn',
+                                parentEl            = '.confirm-options',
+                                callbackFunction    = keyConfirmation,
+                                returnFunction      = afterDialogueBoxDismissal,
                                 applicableEl        = '.btn-confirm',
                                 notApplicableEl     = '';
 
@@ -5069,7 +5180,9 @@
 
             //Support Effect function definitions
 
-            /* ID: 100 */
+            /* 
+            ** ID: 100 
+            */
 			// Level Acceleration 
 			// Advance a Caster's rank by one tier at no levelling cost.
 			// Usage: Levelling Phase
@@ -7147,6 +7260,8 @@
             .display-resource-value.aero-tag {
                 background: #f1c40f;
                 color: #404040;
+            }
+            .display-resource-value.aero-tag.activeResourceTag {
     			animation: aeroPulse 2s infinite;
     			-webkit-animation: aeroPulse 2s infinite;
     			-moz-animation: aeroPulse 2s infinite;
@@ -7155,6 +7270,8 @@
             .display-resource-value.terra-tag {
                 background: #27ae60;
                 color: white;
+            }
+            .display-resource-value.terra-tag.activeResourceTag {
     			animation: terraPulse 2s infinite;
     			-webkit-animation: terraPulse 2s infinite;
     			-moz-animation: terraPulse 2s infinite;
@@ -7163,6 +7280,8 @@
             .display-resource-value.hydro-tag {
                 background: #3498db;
                 color: white;
+            }
+            .display-resource-value.hydro-tag.activeResourceTag {
     			animation: hydroPulse 2s infinite;
     			-webkit-animation: hydroPulse 2s infinite;
     			-moz-animation: hydroPulse 2s infinite;
@@ -7171,6 +7290,8 @@
             .display-resource-value.pyro-tag {
                 background: #c0392b;
                 color: white;
+            }
+            .display-resource-value.pyro-tag.activeResourceTag {
     			animation: pyroPulse 2s infinite;
     			-webkit-animation: pyroPulse 2s infinite;
     			-moz-animation: pyroPulse 2s infinite;
@@ -7278,8 +7399,12 @@
                 position: relative;
                 z-index: 1;
             }
+            .dialogue-box-notice-emphasis {
+                font-size: 30px;
+            }
             .dialogue-box-notice-detail {
-                font-size: 20px;
+                font-size: 18px;
+    			margin-top: 15px;
             }
             .dialogueBox-component .card-motivs {
                 top: 0;
@@ -7362,7 +7487,7 @@
             .turn-order {
                 font-size: 20px;
             }
-            .confirm-hand {
+            .confirmation-prompt {
                 text-align: center;
                 font-size: 20px;
             }
