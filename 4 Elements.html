@@ -720,27 +720,114 @@
 
                     toggleDialogueBox(false,false);
 
+                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                    jQuery('.resource').removeClass('poolingResource'); // remove resource pool reference
+                    jQuery('.resource-aperture').removeClass('activeResource'); // remove aperture reference
+
+                    // Remove resource value tags
+                    removeResourceValueTags();
+
                     resourceConfirmationPhase = false; // disallow UI key navigation
-                    /*resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                    formerPhase = 'resourceConfirmationPhase';
-                    currentPhase = 'resourcePoolingPhase';
-
-                    // Update phase indicator
-                    updatePhaseIndicator();
-
-                    // Update and display phase guide
-                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-                    updatePhaseGuide(guideInstruction,currentPhase);
+		            formerPhase = 'resourceConfirmationPhase';
 
                     // Unmark valid selection options
                     unmarkValidSelections();
 
-                    // Mark valid selection options
-                    markValidSelections('caster-card-type');*/
+                    // Determine if ranking is possible
+                    if(supportLevellingPossibility()) { // check for support leveling cards
+
+                    	// Allow enough time for previouse dialogue box to dismiss
+                    	setTimeout(function(){
+
+	                    	dialogueBoxContent =    `<div class="confirmation-prompt">
+				                                        <div class="dialogue-box-notice-emphasis">Leverage Levelling Support?</div>
+				                                        <div class="dialogue-box-notice-detail">
+				                                            Would you like to use the levelling support card detected in your hand?
+				                                        </div>
+				                                        <div class="confirm-options">
+				                                            <div class="btn btn-confirm focus" data-confirm="true">Yes</div>
+				                                            <div class="btn btn-confirm" data-confirm="false">No</div>
+				                                        </div>
+				                                    </div>`;
+
+				            if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
+				                jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
+				            }
+
+				            // call dialogue box
+				            toggleDialogueBox(false,true);
+
+				        },500);
+
+			            // Dismiss the current phase guide
+			            dismissPhaseGuide();
+
+			            proceedConfirmationPhase = true; // allow key selection
+			            currentPhase = 'proceedConfirmationPhase';
+
+			            // Update phase indicator
+			            updatePhaseIndicator();
+
+                    } else if(promoteRankPossibility()) { // check for standard levelling requirements
+
+	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
+	                    currentPhase = 'levellingPhase';
+
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
+
+	                    // Update and display phase guide
+	                    guideInstruction = 'Select a valid caster card to promote to';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
+
+	                } else { // rank promotion not possible, proceed to Support Phase
+
+	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
+	                    currentPhase = 'supportSelectionPhase';
+
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
+
+	                    // Update and display phase guide
+	                    guideInstruction = 'Allocate a valid support card for battle phase assist';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
+
+	                    // Mark valid selection options
+	                    markValidSelections('support-card-type');
+
+	                    // Unmark valid selection options
+	                    unmarkValidSelections();
+
+	                }
+
+                } else if(supportConfirmationPhase) { 
+
+                    toggleDialogueBox(false,false);
 
                 } else if(proceedConfirmationPhase) {
 
                     toggleDialogueBox(false,false);
+
+                	if(formerPhase == 'resourceConfirmationPhase') {
+
+		                supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
+		                currentPhase = 'supportLevellingPhase';
+
+		                // Update phase indicator
+		                updatePhaseIndicator();
+
+		                // Update and display phase guide
+		                guideInstruction = 'Select a valid support levelling card to place in play';
+		                updatePhaseGuide(guideInstruction,currentPhase);
+
+		                // Mark valid selection options
+		                markValidSelections('levelling-card-type');
+
+		                // Prepare support card aperture
+		            	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+		        		jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
+
+		        	}
 
                 } else {
                     toggleDialogueBox(false,false);
@@ -835,7 +922,7 @@
             */
             // An ES6 / ECMAScript 2015 shuffling function based on the Durstenfeld shuffle
             // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-            function shuffleDeck(deckArray) {
+            function shuffleArray(deckArray) {
 
                 for (let i = deckArray.length - 1; i > 0; i--) {
 
@@ -855,7 +942,7 @@
                 player_standbyDeck = [...Array(60).keys()]; // build array consisting of 60 unit values
                 player_deckName = 'Auto-generated Deck';
             }
-            shuffleDeck(player_standbyDeck);
+            shuffleArray(player_standbyDeck);
             console.log(player_standbyDeck);
 
             // Set deck name
@@ -2045,13 +2132,16 @@
             // Start turn selection phase
             if (turnSelectionPhase) {
 
-                var elArray = ['terra','aero','hydro','pyro'],
+                var turnSelectionMade = false,
+                	elArray = ['terra','aero','hydro','pyro'],
                     elArrayDesignated = [],
                     autoSelection = elArray[Math.floor(Math.random() * elArray.length)], // retrieve random value from array
                     playerSelection,
                     selectedTurn,
                     playerTurn,
                     autoDesignation;
+
+				shuffleArray(elArray);
 
                 turnSelect(elArray);
 
@@ -2083,37 +2173,52 @@
             function turnSelect(elArray) {
 
                 // Randomly selected turn matching card
-                jQuery('<div></div>').addClass('turnCard turnCard-hidden').attr('data-element',autoSelection).appendTo('.turnCard-match');
+                //jQuery('<div></div>').addClass('turnCard turnCard-hidden').attr('data-element',autoSelection).appendTo('.turnCard-match');
 
-                // Append the turn card back
-                jQuery('.turnCard-match .turnCard').append('<div class="card facedownCard">'+cardBack+'</div>');
+                // Designate first x2 elements in array to draw turn matches
+               	for(var i = 0; i <= 1; i++) {
 
-                switch(autoSelection) {
+	                jQuery('<div></div>').addClass('turnCard turnCard-hidden').attr('data-element',elArray[i]).appendTo('.turnCard-match');
 
-                    case 'terra':
-                        jQuery('.turnCard .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-leaf"></i></div></div>');
-                    break;
+	                // Append the turn card back
+	                jQuery('.turnCard-match .turnCard[data-element="'+elArray[i]+'"]').append('<div class="card facedownCard">'+cardBack+'</div>');
 
-                    case 'aero':
-                        jQuery('.turnCard .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-cloud"></i></div></div>');
-                    break;
+	                switch(elArray[i]) {
 
-                    case 'hydro':
-                        jQuery('.turnCard .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-tint"></i></div></div>');
-                    break;
+	                    case 'terra':
+	                        jQuery('.turnCard[data-element="'+elArray[i]+'"] .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-leaf"></i></div></div>');
+	                    break;
 
-                    case 'pyro':
-                        jQuery('.turnCard .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-burn"></i></div></div>');
-                    break;
+	                    case 'aero':
+	                        jQuery('.turnCard[data-element="'+elArray[i]+'"] .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-cloud"></i></div></div>');
+	                    break;
 
-                }
+	                    case 'hydro':
+	                        jQuery('.turnCard[data-element="'+elArray[i]+'"] .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-tint"></i></div></div>');
+	                    break;
+
+	                    case 'pyro':
+	                        jQuery('.turnCard[data-element="'+elArray[i]+'"] .card').append('<div class="cardFront ghostCard"><div class="card"><i class="fas fa-burn"></i></div></div>');
+	                    break;
+
+	                }
+
+	            }
 
                 // Draw the turn card match
-                setTimeout(function(){
+                iterationDelay = 300;
 
-                    jQuery('.turnCard-match .turnCard').removeClass('turnCard-hidden').addClass('turnCard-drawn');
+                jQuery('.turnCard-match .turnCard').each(function(i,el){
 
-                },300);
+	                setTimeout(function(){
+
+	                    jQuery(el).removeClass('turnCard-hidden').addClass('turnCard-drawn');
+
+	                },iterationDelay);
+
+	                iterationDelay += 300;
+
+	            });
 
                 // Randomly designate turn selection cards
                 iterationDelay = 0;
@@ -2220,36 +2325,57 @@
             // Select with mouse
             jQuery('.turnCard-component .turnCard-selection').on('click','.turnCard',function() {
 
-                if(!jQuery(this).hasClass('focus')) {
-                    jQuery('.turnCard').removeClass('focus');
-                    jQuery(this).addClass('focus');
-                }
+            	if(!turnSelectionMade) {
 
-                playerSelection = jQuery(this).attr('data-element');
+	                if(!jQuery(this).hasClass('focus')) {
+	                    jQuery('.turnCard').removeClass('focus');
+	                    jQuery(this).addClass('focus');
+	                }
 
-                determineTurnOutcome();
+	                playerSelection = jQuery(this).attr('data-element');
+	                turnSelectionMade = true;
+
+	                determineTurnOutcome();
+
+	            }
 
             });
             jQuery('.turnCard-component .turnCard-selection').on('mouseover','.turnCard',function() {
 
-                jQuery('.turnCard').removeClass('focus');
-                jQuery(this).addClass('focus');
+            	if(!turnSelectionMade) {
+
+	                jQuery('.turnCard').removeClass('focus');
+	                jQuery(this).addClass('focus');
+
+	            }
 
             });
 
             // Select with keys
             function keyTurnSelect(){
 
-                playerSelection = jQuery('.turnCard.focus').attr('data-element');
+            	if(!turnSelectionMade) {
 
-                determineTurnOutcome();
+	                playerSelection = jQuery('.turnCard.focus').attr('data-element');
+	                turnSelectionMade = true;
+
+	                determineTurnOutcome();
+
+	            }
 
             }
 
             // Is the player going first or is the AI going first?
             function determineTurnOutcome(){
 
-                if(playerSelection == autoSelection) {
+            	// Repopulate emptied array with turn matching card elements to match against
+            	jQuery('.turnCard-match .turnCard').each(function(){
+
+            		elArray.push(jQuery(this).attr('data-element'));
+
+            	});
+
+               	if(playerSelection == elArray[0] || playerSelection == elArray[1]) {
                     selectedTurn = 'first';
                     playerTurn = true;
                     // Set turn indicator
@@ -2278,37 +2404,54 @@
                 }
 
                 // Reveal turn card match
-                setTimeout(function(){
+                var drawnTurnCardMatch = jQuery('.turnCard-match .turnCard');
 
-                    var drawnTurnCardMatch = jQuery('.turnCard-match .turnCard');
+                iterationDelay = 500,
+                iterationCount = 1;
 
-                    jQuery(drawnTurnCardMatch).removeClass('facedownCard').addClass('flippedCard');
+                jQuery(drawnTurnCardMatch).each(function(i,el){
 
-                    setTimeout(function(){
+	                setTimeout(function(){
 
-                        jQuery(drawnTurnCardMatch).removeClass('flippedCard');
-                        jQuery(drawnTurnCardMatch).find('.cardFront').removeClass('ghostCard');
-                        jQuery(drawnTurnCardMatch).find('.cardBack').remove();
+	                    jQuery(el).removeClass('facedownCard').addClass('flippedCard');
 
-                        setTimeout(function(){
+	                    setTimeout(function(){
 
-                            // call dialogue box
-                            toggleDialogueBox(false,true);
+	                        jQuery(el).removeClass('flippedCard');
+	                        jQuery(el).find('.cardFront').removeClass('ghostCard');
+	                        jQuery(el).find('.cardBack').remove();
 
-                            setTimeout(function(){ // auto dismiss after delay
+	                        if(iterationCount < 2) {
 
-                                // is the turn selection phase still active?
-                                if (turnSelectionPhase) {
-                                    toggleDialogueBox(false,false);
-                                }
+                    			iterationCount++;
 
-                            },2000);
+	                        } else {
 
-                        },300);
+		                        setTimeout(function(){
 
-                    },150);
+		                            // call dialogue box
+		                            toggleDialogueBox(false,true);
 
-                },500);
+		                            setTimeout(function(){ // auto dismiss after delay
+
+		                                // is the turn selection phase still active?
+		                                if (turnSelectionPhase) {
+		                                    toggleDialogueBox(false,false);
+		                                }
+
+		                            },2000);
+
+		                        },300);
+
+		                    }
+
+	                    },150);
+
+	                },iterationDelay);
+
+                    iterationDelay += 300;
+
+                });
 
             }
 
