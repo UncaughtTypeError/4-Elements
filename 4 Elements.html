@@ -1956,7 +1956,7 @@
                         cardApertureHeight;
 
                     // Draw cards
-                    jQuery(playerHand).find('.card-aperture.open').each(function(i){
+                    jQuery(playerTurn ? jQuery(playerHand).find('.card-aperture.open').get().reverse() : jQuery(playerHand).find('.card-aperture.open')).each(function(i){
 
                         let current_aperture = jQuery(this);
 
