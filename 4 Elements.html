@@ -6138,7 +6138,7 @@
                     // Remove resource value tags
                     removeResourceValueTags();
 
-                    resourcePoolingPhase = false; // disallow UI key navigation
+                    resourcePoolingPhase = false;
                     formerPhase = 'resourcePoolingPhase';
 
                     // Unmark valid selection options
@@ -6154,6 +6154,43 @@
                     	} else if(promoteRankPossibility()) { // check for standard levelling requirements
 
                     		console.log('AI standard levelling phase');
+
+		                    levellingPhase = true;
+		                    currentPhase = 'levellingPhase';
+
+			                // Update and display phase guide
+			                guideInstruction = 'Levelling Caster...';
+			                updatePhaseGuide(guideInstruction,currentPhase);
+
+                    		var AIcasterRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-rank'),
+                    			AIcasterDiscipline = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-discipline');
+
+                    		var forceMax = returnMaxForce(aiHand, '.valid-for-selection', '.'+AIcasterRank+'-ranking.'+AIcasterDiscipline+'-motiv');
+
+                    		jQuery('.valid-for-selection').each(function(){
+
+                    			if(jQuery(this).find('caster-attributes').attr('data-force') == forceMax) {
+                    				
+                    				jQuery(this).addClass('AIfocus');
+                    				jQuery(this).find('.card').addClass('casterSelection');
+
+                    			}
+
+                    		});
+
+			            	cardAperture = jQuery('.valid-for-selection.AIfocus');
+			                casterSelection = jQuery('.casterSelection');
+			                aiField = jQuery(aiHand).attr('data-field');
+
+							placeInPlay(casterSelection, aiField, cardAperture);
+
+							// Delayed Upkeep
+							setTimeout(function(){
+
+			                    levellingPhase = false;
+			                    formerPhase = 'levellingPhase';
+
+							},2000);
 
                     	} else { // rank promotion not possible, proceed to Support Phase
 
