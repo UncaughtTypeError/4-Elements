@@ -5786,20 +5786,25 @@
 
             /*
             **
-            ** AI Automated Processes
+            ** Player & AI Attributes
             **
             */
 
-            // Player attribute object constructors, required for AI processes to reference to determine viable and logical actions
-            function PlayerAttributes(inPlayCaster, inHand, deckDesciplines) {
+            // Define player attributes
+            var inPlayCaster,
+            	inHand,
+            	attributesPlayer,
+            	attributesAI;
+
+            // Player attribute object constructors
+            function PlayerAttributesConstr(inPlayCaster, inHand, deckDesciplines) {
 
             	this.inPlayCaster = inPlayCaster;
             	this.inHand = inHand;
             	this.deckDisciplines = deckDisciplines;
 
             }
-
-            function PlayerCardInHand(cardRanking, cardDiscipline, cardForce, cardType, cardTitle) {
+            function PlayerCardInHandConstr(cardRanking, cardDiscipline, cardForce, cardType, cardTitle) {
 
             	this.cardRanking = cardRanking;
             	this.cardDiscipline = cardDiscipline;
@@ -5809,37 +5814,67 @@
 
             }
 
-            // Define player attributes
-            var inPlayCaster,
-            	inHand,
-            	playerAttributes;
+            // AI attribute object constructors
+            function AIAttributesConstr(inPlayCaster, inHand, deckDesciplines) {
 
-            // Define player's in-play caster
-            inPlayCaster = jQuery('[data-battle-field="player-field"] .in-play .card');
+            	this.inPlayCaster = inPlayCaster;
+            	this.inHand = inHand;
+            	this.deckDisciplines = deckDisciplines;
 
-            // Define player attributes object
-            playerAttributes = new PlayerAttributes(inPlayCaster, inHand, deckDisciplines);
+            }
+            function AICardInHandConstr(cardRanking, cardDiscipline, cardForce, cardType, cardTitle) {
 
-            // Define cards in player's hand
-            if(jQuery('[data-field="player-field"] .player-hand .card').length) {
+            	this.cardRanking = cardRanking;
+            	this.cardDiscipline = cardDiscipline;
+            	this.cardForce = cardForce;
+            	this.cardType = cardType;
+            	this.cardTitle = cardTitle
 
-	            jQuery('[data-field="player-field"] .player-hand .card').each(function(i){
+            }
 
-	            	let cardRanking = jQuery(this).find('.caster-attributes').attr('data-rank'),
-	            		cardDiscipline = jQuery(this).find('.caster-attributes').attr('data-discipline'),
-	            		cardForce = jQuery(this).find('.caster-attributes').attr('data-force'),
-	            		cardType = jQuery(this).find('.caster-attributes').attr('data-type'),
-	            		cardTitle = jQuery(this).find('.caster-attributes').attr('data-appellation'),
-						cardInHand = new PlayerCardInHand(cardRanking, cardDiscipline, cardForce, cardType, cardTitle);
+            // Construct player/AI attributes object for support reference and AI processing reference
+            function constructAttributes(field, attributesObj, attributesConstr, cardInHandConstr) {
 
-						// Assign card detials to attributes object
-						Object.assign(playerAttributes.inHand, cardInHand);
+	            // Define player's in-play caster
+	            inPlayCaster = jQuery('[data-battle-field="'+field+'"] .in-play .card');
 
-	           			console.log('player attributes:',playerAttributes);
+	            // Define player attributes object
+	            attributesObj = new attributesConstr(inPlayCaster, inHand, deckDisciplines);
 
-	            });
+	            // Define cards in hand
+	            if(jQuery('[data-field="'+field+'"] .player-hand .card').length) {
 
-	        }
+		            jQuery('[data-field="'+field+'"] .player-hand .card').each(function(i){
+
+		            	let cardRanking = jQuery(this).find('.caster-attributes').attr('data-rank'),
+		            		cardDiscipline = jQuery(this).find('.caster-attributes').attr('data-discipline'),
+		            		cardForce = jQuery(this).find('.caster-attributes').attr('data-force'),
+		            		cardType = jQuery(this).find('.caster-attributes').attr('data-type'),
+		            		cardTitle = jQuery(this).find('.caster-attributes').attr('data-appellation'),
+							cardInHand = new cardInHandConstr(cardRanking, cardDiscipline, cardForce, cardType, cardTitle);
+
+							// Assign card detials to attributes object
+							Object.assign(attributesObj.inHand, cardInHand);
+
+		           			console.log('player attributes:',attributesObj);
+
+		            });
+
+		        }
+
+		    }
+
+		    // Constuct player attributes
+		    constructAttributes('player-field', attributesPlayer, PlayerAttributesConstr, PlayerCardInHandConstr);
+
+		    // Constuct AI attributes
+		    constructAttributes('ai-field', attributesAI, AIAttributesConstr, AICardInHandConstr);
+
+            /*
+            **
+            ** AI Automated Processes
+            **
+            */
 
             // AI Caster Selection
             function AIcasterSelection(aiHand) {
