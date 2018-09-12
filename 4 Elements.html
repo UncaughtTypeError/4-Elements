@@ -671,57 +671,66 @@
 
                     } else {
 
-                    	// TODO : check to determine if caster cards are present in hand to allow resource pooling
+                    	// Determine if valid card types are available to pool resources
+			            if(jQuery(playerHand).find('.caster-card-type').length) {
 
-                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                        formerPhase = 'handConfirmationPhase';
-                        currentPhase = 'resourcePoolingPhase';
+	                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+	                        formerPhase = 'handConfirmationPhase';
+	                        currentPhase = 'resourcePoolingPhase';
 
-                        // Update phase indicator
-                        updatePhaseIndicator();
+	                        // Update phase indicator
+	                        updatePhaseIndicator();
 
-                        // Update and display phase guide
-                        guideInstruction = 'Allocate a valid caster card for resource pooling';
-                        updatePhaseGuide(guideInstruction,currentPhase);
+	                        // Update and display phase guide
+	                        guideInstruction = 'Allocate a valid caster card for resource pooling';
+	                        updatePhaseGuide(guideInstruction,currentPhase);
 
-                        // Unmark valid selection options
-                        unmarkValidSelections();
+	                        // Unmark valid selection options
+	                        unmarkValidSelections();
 
-                        // Mark valid selection options
-                        markValidSelections('caster-card-type');
+	                        // Mark valid selection options
+	                        markValidSelections('caster-card-type');
 
-                        // Display resource value tags
-                        displayResourceValueTags();
+	                        // Display resource value tags
+	                        displayResourceValueTags();
+
+	                    }
 
                     }
 
                 } else if(casterConfirmationPhase) { 
 
-                	// TODO : check to determine if caster cards are present in hand to allow resource pooling
+                	// Construct player attributes
+                	constructPlayerAttributes();
 
                 	// end caster confirmation phase, proceed to resource pooling phase
                     toggleDialogueBox(false,false);
 
-                    casterConfirmationPhase = false; // disallow UI key navigation
-                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                    formerPhase = 'casterConfirmationPhase';
-                    currentPhase = 'resourcePoolingPhase';
+                	// Determine if valid card types are available to pool resources
+			        if(jQuery(playerHand).find('.caster-card-type').length) {
 
-                    // Update phase indicator
-                    updatePhaseIndicator();
+	                    casterConfirmationPhase = false; // disallow UI key navigation
+	                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+	                    formerPhase = 'casterConfirmationPhase';
+	                    currentPhase = 'resourcePoolingPhase';
 
-                    // Update and display phase guide
-                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-                    updatePhaseGuide(guideInstruction,currentPhase);
+	                    // Update phase indicator
+	                    updatePhaseIndicator();
 
-                    // Unmark valid selection options
-                    unmarkValidSelections();
+	                    // Update and display phase guide
+	                    guideInstruction = 'Allocate a valid caster card for resource pooling';
+	                    updatePhaseGuide(guideInstruction,currentPhase);
 
-                    // Mark valid selection options
-                    markValidSelections('caster-card-type');
+	                    // Unmark valid selection options
+	                    unmarkValidSelections();
 
-                    // Display resource value tags
-                    displayResourceValueTags();
+	                    // Mark valid selection options
+	                    markValidSelections('caster-card-type');
+
+	                    // Display resource value tags
+	                    displayResourceValueTags();
+
+	                }
 
                 } else if(resourceConfirmationPhase) { 
 
@@ -1290,7 +1299,7 @@
                                     cardForce       = generateCardPower(),
                                     cardType        = 'Caster',
                                     cardBody        =   `<div class="cardFront">
-                                                            <div class="card-marker">Valid</div>
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
                                                             <div class="card-number">${cardData}</div>
                                                             <div class="card-discipline">${cardDiscipline}</div>
                                                             <div class="card-resource-currency"></div>
@@ -1499,7 +1508,7 @@
                                     cardSupport     = generateCardSupport(),
                                     cardType        = 'Support',
                                     cardBody        =   `<div class="cardFront">
-                                                            <div class="card-marker">Valid</div>
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
                                                             <div class="card-number">${cardData}</div>
                                                             <div class="card-discipline"></div>
                                                             <div class="card-elemental-motif"></div>
@@ -1829,27 +1838,30 @@
 
                     } else {
 
-                    	// TODO : check to determine if caster cards are present in hand to allow resource pooling
+                    	// Determine if valid card types are available to pool resources
+			            if(jQuery(playerHand).find('.caster-card-type').length) {
 
-                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-                        formerPhase = 'handConfirmationPhase';
-                        currentPhase = 'resourcePoolingPhase';
+	                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+	                        formerPhase = 'handConfirmationPhase';
+	                        currentPhase = 'resourcePoolingPhase';
 
-                        // Update phase indicator
-                        updatePhaseIndicator();
+	                        // Update phase indicator
+	                        updatePhaseIndicator();
 
-                        // Update and display phase guide
-                        guideInstruction = 'Allocate a valid caster card for resource pooling';
-                        updatePhaseGuide(guideInstruction,currentPhase);
+	                        // Update and display phase guide
+	                        guideInstruction = 'Allocate a valid caster card for resource pooling';
+	                        updatePhaseGuide(guideInstruction,currentPhase);
 
-                        // Unmark valid selection options
-                        unmarkValidSelections();
+	                        // Unmark valid selection options
+	                        unmarkValidSelections();
 
-                        // Mark valid selection options
-                        markValidSelections('caster-card-type');
+	                        // Mark valid selection options
+	                        markValidSelections('caster-card-type');
 
-                        // Display resource value tags
-                        displayResourceValueTags();
+	                        // Display resource value tags
+	                        displayResourceValueTags();
+
+	                    }
 
                     }
 
@@ -2181,28 +2193,34 @@
 
 							                    } else {
 
-							                    	// TODO : check to determine if caster cards are present in hand to allow resource pooling
+									            	// Determine if valid card types are available to pool resources
+									            	if(jQuery(playerHand).find('.caster-card-type').length) {
 
-							                        resourcePoolingPhase = true;
-							                        formerPhase = 'handConfirmationPhase';
-							                        currentPhase = 'resourcePoolingPhase';
+								                        resourcePoolingPhase = true;
+								                        formerPhase = 'handConfirmationPhase';
+								                        currentPhase = 'resourcePoolingPhase';
 
-							                        // Update phase indicator
-							                        updatePhaseIndicator();
+								                        // Update phase indicator
+								                        updatePhaseIndicator();
 
-							                        // Unmark valid selection options
-							                        unmarkValidSelections();
+								                        // Unmark valid selection options
+								                        unmarkValidSelections();
 
-							                        // Mark valid selection options
-							                        markValidSelections('caster-card-type');
+								                        // Mark valid selection options
+								                        markValidSelections('caster-card-type');
 
-							                        // Display resource value tags
-							                        displayResourceValueTags();
+								                        // Display resource value tags
+								                        displayResourceValueTags();
 
-							                        // AI resource selection
-							                        AIresourceSelection(playerHand);
+								                        // AI resource selection
+								                        AIresourceSelection(playerHand);
 
-                                            		console.log('AIresourceSelection');
+	                                            		console.log('AIresourceSelection');
+
+	                                            	} else {
+														// TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
+														console.log('no available cards to allocate to resource pooling')
+													}
 
 							                    }
 
@@ -3074,6 +3092,9 @@
 
                     toggleDialogueBox(false,true);
 
+                	// Construct player attributes
+                	constructPlayerAttributes();
+
                     //Remove force nerfs
                     restoreForce();
 
@@ -3092,30 +3113,33 @@
 
 	                    if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length == 1) {
 
-	                    	if(playerTurn) { // if palyer turn then proceed to resource poolinig phase...
+	                    	if(playerTurn) { // if palyer turn then proceed to resource pooling phase...
 
-	                    		// TODO : check to determine if caster cards are present in hand to allow resource pooling
+	                    		// Determine if valid card types are available to pool resources
+			            		if(jQuery(playerHand).find('.caster-card-type').length) {
 
-			                    casterConfirmationPhase = false; // disallow UI key navigation
-			                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-			                    formerPhase = 'casterConfirmationPhase';
-			                    currentPhase = 'resourcePoolingPhase';
+				                    casterConfirmationPhase = false; // disallow UI key navigation
+				                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+				                    formerPhase = 'casterConfirmationPhase';
+				                    currentPhase = 'resourcePoolingPhase';
 
-			                    // Update phase indicator
-			                    updatePhaseIndicator();
+				                    // Update phase indicator
+				                    updatePhaseIndicator();
 
-			                    // Update and display phase guide
-			                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-			                    updatePhaseGuide(guideInstruction,currentPhase);
+				                    // Update and display phase guide
+				                    guideInstruction = 'Allocate a valid caster card for resource pooling';
+				                    updatePhaseGuide(guideInstruction,currentPhase);
 
-			                    // Unmark valid selection options
-			                    unmarkValidSelections();
+				                    // Unmark valid selection options
+				                    unmarkValidSelections();
 
-			                    // Mark valid selection options
-			                    markValidSelections('caster-card-type');
+				                    // Mark valid selection options
+				                    markValidSelections('caster-card-type');
 
-			                    // Display resource value tags
-			                    displayResourceValueTags();
+				                    // Display resource value tags
+				                    displayResourceValueTags();
+
+			                	}
 
 			                } else if(AIprocessing) { // ...else player has placed caster card into play after battle loss during opponent turn in order to proceed to support selection phase
 
@@ -4974,6 +4998,10 @@
 
                     browseAndPreview();
 
+                } else if(formerPhase == 'handBrowsingPhase' || formerPhase == 'casterConfirmationPhase') {
+
+                    keySelectCaster();
+
                 } else if(formerPhase == 'resourcePoolingPhase' || formerPhase == 'resourceConfirmationPhase') {
 
                     keySelectResource();
@@ -5719,6 +5747,17 @@
             **
             */
 
+            /* 
+            ** On AI Support Actions
+            */
+            // Outcome Assessment Score: 
+            // Every support card is evaluated and attributed an OAS calculated by a number of circumstancial factors at the time of play, 
+            // applicable in instances where multiple support cards are available, the support card with the greatest OAS will be selected.
+            // Options based outcome will be determined by greatest possibility of speculated success
+            // OAS is invoked at the beginning of AI support phase
+            // Efficacy of support cards are established, ineffective support cards are attributed an OAS of 0 and excluded from consideration,
+            // remaining support card OAS are calculated and established on conjected outcomes
+
             /*
             ** 100 -> Level Acceleration 			: Advance a Caster's rank by one tier at no levelling cost.								| Usage: Levelling Phase 	| Rank: neophyte
             ** 101 -> Level Retrograde 				: Revert a Caster's rank to its previous tier.											| Usage: Levelling Phase 	| Rank: proficient
@@ -5850,11 +5889,13 @@
 		            		cardDiscipline = jQuery(this).find('.caster-attributes').attr('data-discipline'),
 		            		cardForce = jQuery(this).find('.caster-attributes').attr('data-force'),
 		            		cardType = jQuery(this).find('.caster-attributes').attr('data-type'),
-		            		cardTitle = jQuery(this).find('.caster-attributes').attr('data-appellation'),
+		            		cardTitle = jQuery(this).find('.caster-attributes').attr('data-appellation') ? jQuery(this).find('.caster-attributes').attr('data-appellation') : 'none',
 							cardInHand = new cardInHandConstr(cardRanking, cardDiscipline, cardForce, cardType, cardTitle);
 
+		           			console.log('cardInHand:',cardInHand);
+
 							// Assign card detials to attributes object
-							Object.assign(attributesObj.inHand, cardInHand);
+							//Object.assign(attributesObj.inHand, cardInHand);
 
 		           			console.log('player attributes:',attributesObj);
 
@@ -5864,11 +5905,24 @@
 
 		    }
 
-		    // Constuct player attributes
-		    constructAttributes('player-field', attributesPlayer, PlayerAttributesConstr, PlayerCardInHandConstr);
+		    // Invoke applicable function to construct player/AI attributes
+		    function constructPlayerAttributes() {
 
-		    // Constuct AI attributes
-		    constructAttributes('ai-field', attributesAI, AIAttributesConstr, AICardInHandConstr);
+		    	if(playerTurn) {
+
+				    // Constuct player attributes
+				    constructAttributes('player-field', attributesPlayer, PlayerAttributesConstr, PlayerCardInHandConstr);
+				    console.log('player attributes: '+attributesPlayer);
+
+				} else if(!playerTurn) {
+
+				    // Constuct AI attributes
+				    constructAttributes('ai-field', attributesAI, AIAttributesConstr, AICardInHandConstr);
+				    console.log('ai attributes: '+attributesAI);
+
+				}
+
+			}
 
             /*
             **
@@ -5937,21 +5991,32 @@
 
 						if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length == 1) {
 
-	                        resourcePoolingPhase = true;
-	                        formerPhase = 'casterSelectionPhase';
-	                        currentPhase = 'resourcePoolingPhase';
+			            	// Determine if valid card types are available to pool resources
+			            	if(jQuery(playerHand).find('.caster-card-type').length) {
 
-	                        // Unmark valid selection options
-	                        unmarkValidSelections();
+		                        resourcePoolingPhase = true;
+		                        formerPhase = 'casterSelectionPhase';
+		                        currentPhase = 'resourcePoolingPhase';
 
-	                        // Mark valid selection options
-	                        markValidSelections('caster-card-type');
+		                        // Update phase indicator
+		                        updatePhaseIndicator();
 
-	                        // Display resource value tags
-	                        displayResourceValueTags();
+		                        // Unmark valid selection options
+		                        unmarkValidSelections();
 
-							// AI resource selection
-							AIresourceSelection(playerHand);
+		                        // Mark valid selection options
+		                        markValidSelections('caster-card-type');
+
+		                        // Display resource value tags
+		                        displayResourceValueTags();
+
+								// AI resource selection
+								AIresourceSelection(playerHand);
+
+							} else {
+								// TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
+								console.log('no available cards to allocate to resource pooling')
+							}
 
 	                    } else if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length > 1) {
 
@@ -6378,6 +6443,9 @@
             .card-force-nerfed span .fas {
                 position: absolute;
                 line-height: 90px;
+            }
+            .caster-nerfed .fa-check {
+            	display: none;
             }
             .card-support {
                 width: 102px;
