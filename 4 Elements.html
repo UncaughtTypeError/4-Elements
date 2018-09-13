@@ -1319,6 +1319,7 @@
 						                                    <div class="caster-attributes" 
 						                                    	data-type="${cardType}"
 						                                    	data-rank=""
+						                                    	data-rank-next=""
 						                                    	data-force="${cardForce}"
 						                                    	data-cost="" 
 						                                    	data-currency="" 
@@ -1336,8 +1337,9 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('peerless-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>');
 
-                                    // Update Rank attribute
+                                    // Update Rank attributes
                                     jQuery(clonedCard).find('.caster-attributes').attr('data-rank','peerless');
+                                    jQuery(clonedCard).find('.caster-attributes').removeAttr('data-rank-next');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1364,8 +1366,9 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('elite-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
-                                    // Update Rank attribute
+                                    // Update Rank attributes
                                     jQuery(clonedCard).find('.caster-attributes').attr('data-rank','elite');
+                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','peerless');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1393,8 +1396,9 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('adept-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
-                                    // Update Rank attribute
+                                    // Update Rank attributes
                                     jQuery(clonedCard).find('.caster-attributes').attr('data-rank','adept');
+                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','elite');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1422,8 +1426,9 @@
                                     jQuery(clonedCard).find('.cardFront').addClass('proficient-ranking');
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i>');
 
-                                    // Update Rank attribute
+                                    // Update Rank attributes
                                     jQuery(clonedCard).find('.caster-attributes').attr('data-rank','proficient');
+                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','adept');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1450,8 +1455,9 @@
 
                                     jQuery(clonedCard).find('.cardFront').addClass('neophyte-ranking');
 
-                                    // Update Rank attribute
+                                    // Update Rank attributes
                                     jQuery(clonedCard).find('.caster-attributes').attr('data-rank','neophyte');
+                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','proficient');
 
                                     // Update Resource Currency
                                     if(cardForce >= 45 && cardForce < 70) {
@@ -2187,7 +2193,9 @@
 							                        },500);
 
 							                        // AI caster selection
-							                        AIcasterSelection(playerHand);
+							                        setTimeout(function(){
+							                        	AIcasterSelection(playerHand);
+							                        },1000);
 
                                             		console.log('AIcasterSelection');
 
@@ -2213,7 +2221,9 @@
 								                        displayResourceValueTags();
 
 								                        // AI resource selection
-								                        AIresourceSelection(playerHand);
+							            				setTimeout(function(){
+								                        	AIresourceSelection(playerHand);
+								                        },1000);
 
 	                                            		console.log('AIresourceSelection');
 
@@ -3158,7 +3168,9 @@
 		                        markValidSelections('support-card-type');
 
 			                    // AI support selection
-			                    AIsupportSelection(playerHand);
+							    setTimeout(function(){
+				                    AIsupportSelection(playerHand);
+				                },1000);
 
                                 console.log('AIsupportSelection');
 
@@ -3206,7 +3218,9 @@
 				                        currentPhase = 'casterSelectionPhase';
 
                                         // AI caster selection
-                                        AIcasterSelection(playerHand);
+							            setTimeout(function(){
+	                                        AIcasterSelection(playerHand);
+	                                    },1000);
 
                                         console.log('AIcasterSelection');
 
@@ -5750,13 +5764,14 @@
             /* 
             ** On AI Support Actions
             */
-            // Outcome Assessment Score: 
-            // Every support card is evaluated and attributed an OAS calculated by a number of circumstancial factors at the time of play, 
-            // applicable in instances where multiple support cards are available, the support card with the greatest OAS will be selected.
-            // Options based outcome will be determined by greatest possibility of speculated success
-            // OAS is invoked at the beginning of AI support phase
-            // Efficacy of support cards are established, ineffective support cards are attributed an OAS of 0 and excluded from consideration,
-            // remaining support card OAS are calculated and established on conjected outcomes
+            // Outcome Based Assessment Score: 
+            // Every support card is evaluated and attributed an OBAS calculated by a number of circumstancial factors at the time of play, 
+            // applicable in instances where multiple support cards are available, the support card with the greatest OBAS will be selected.
+            // OBAS will be determined by greatest possibility of speculated success
+            // OBAS is invoked at the beginning of AI support phase
+            // Efficacy of support cards are established, ineffective support cards are attributed an OBAS of 0 and excluded from consideration,
+            // remaining support card OBAS are calculated and established on conjected outcomes
+            // Conclusions are drawn based on readily available information referenced from objects storing information on AI hand and deck and Player hand and deck
 
             /*
             ** 100 -> Level Acceleration 			: Advance a Caster's rank by one tier at no levelling cost.								| Usage: Levelling Phase 	| Rank: neophyte
@@ -6011,7 +6026,9 @@
 		                        displayResourceValueTags();
 
 								// AI resource selection
-								AIresourceSelection(playerHand);
+							    setTimeout(function(){
+									AIresourceSelection(playerHand);
+								},1000);
 
 							} else {
 								// TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
@@ -6262,14 +6279,14 @@
 			                guideInstruction = 'Levelling Caster...';
 			                updatePhaseGuide(guideInstruction,currentPhase);
 
-                    		var AIcasterRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-rank'),
+                    		var AIcasterNextRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-rank-next'),
                     			AIcasterDiscipline = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-discipline');
 
-                    		var forceMax = returnMaxForce(aiHand, '.valid-for-selection', '.'+AIcasterRank+'-ranking.'+AIcasterDiscipline+'-motiv');
+                    		var forceMax = returnMaxForce(aiHand, '.valid-for-selection', '.'+AIcasterNextRank+'-ranking.'+AIcasterDiscipline+'-motiv');
 
                     		jQuery('.valid-for-selection').each(function(){
 
-                    			if(jQuery(this).find('caster-attributes').attr('data-force') == forceMax) {
+                    			if(jQuery(this).find('.caster-attributes').attr('data-force') == forceMax) {
                     				
                     				jQuery(this).addClass('AIfocus');
                     				jQuery(this).find('.card').addClass('casterSelection');
@@ -6282,22 +6299,28 @@
 			                casterSelection = jQuery('.casterSelection');
 			                aiField = jQuery(aiHand).attr('data-field');
 
-							placeInPlay(casterSelection, aiField, cardAperture);
-
-							// Delayed Upkeep
 							setTimeout(function(){
 
-			                    levellingPhase = false;
-			                    formerPhase = 'levellingPhase';
+								placeInPlay(casterSelection, aiField, cardAperture);
 
-							},2000);
+								// Delayed Upkeep
+								setTimeout(function(){
+
+				                    levellingPhase = false;
+				                    formerPhase = 'levellingPhase';
+
+								},2000);
+
+							},1000);
 
                     	} else { // rank promotion not possible, proceed to Support Phase
 
                     		console.log('AI support selection phase');
 
 							// AI support selection
-							AIsupportSelection(playerHand);
+							setTimeout(function(){
+								AIsupportSelection(playerHand);
+							},1000);
 
                     	}
 
