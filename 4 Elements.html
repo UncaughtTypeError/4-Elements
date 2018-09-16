@@ -263,8 +263,14 @@
                 iterationDelay,
                 iterationCount,
                 remainingIterations,
-                battlePhaseTracker,
                 deckDisciplines;
+
+            /*
+            **
+            ** Stats Tracker
+            **
+            */
+            var battlePhaseTracker = 0;
 
             /*
             **
@@ -643,7 +649,7 @@
                     handConfirmationPhase = false; // end hand confirmation phase
 
                     // determine if caster needs to be selected or is already present
-                    let casterInPlay = jQuery('.in-play').find('.activeCaster').length;
+                    let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
 
                     if(casterInPlay == 0) { // no caster in play
 
@@ -706,31 +712,42 @@
                 	// end caster confirmation phase, proceed to resource pooling phase
                     toggleDialogueBox(false,false);
 
-                	// Determine if valid card types are available to pool resources
-			        if(jQuery(playerHand).find('.caster-card-type').length) {
+                    // determine if caster needs to be selected or is already present
+                    let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
 
-	                    casterConfirmationPhase = false; // disallow UI key navigation
-	                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-	                    formerPhase = 'casterConfirmationPhase';
-	                    currentPhase = 'resourcePoolingPhase';
+                    if(casterInPlay == 0) { // no caster in play, caster has been rejected, revert back to selection phase
 
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
+	                	// Determine if valid card types are available to pool resources
+				        if(jQuery(playerHand).find('.caster-card-type').length) {
 
-	                    // Update and display phase guide
-	                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
+		                    casterConfirmationPhase = false; // disallow UI key navigation
+		                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
+		                    formerPhase = 'casterConfirmationPhase';
+		                    currentPhase = 'resourcePoolingPhase';
 
-	                    // Unmark valid selection options
-	                    unmarkValidSelections();
+		                    // Update phase indicator
+		                    updatePhaseIndicator();
 
-	                    // Mark valid selection options
-	                    markValidSelections('caster-card-type');
+		                    // Update and display phase guide
+		                    guideInstruction = 'Allocate a valid caster card for resource pooling';
+		                    updatePhaseGuide(guideInstruction,currentPhase);
 
-	                    // Display resource value tags
-	                    displayResourceValueTags();
+		                    // Unmark valid selection options
+		                    unmarkValidSelections();
 
-	                }
+		                    // Mark valid selection options
+		                    markValidSelections('caster-card-type');
+
+		                    // Display resource value tags
+		                    displayResourceValueTags();
+
+		                }
+
+                    } else if(casterInPlay > 1) { // levelled caster in play, caster has just been levelled, proceed to support phase if AI has caster in play, otherwise allow AI to select caster
+
+                    	// TODO : AI processing to follow
+
+                    }
 
                 } else if(resourceConfirmationPhase) { 
 
@@ -785,6 +802,9 @@
 			            updatePhaseIndicator();
 
                     } else if(promoteRankPossibility()) { // check for standard levelling requirements
+
+	                    //Remove force nerfs
+	                    restoreForce();
 
 	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
 	                    currentPhase = 'levellingPhase';
@@ -1338,8 +1358,8 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>');
 
                                     // Update Rank attributes
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','peerless');
-                                    jQuery(clonedCard).find('.caster-attributes').removeAttr('data-rank-next');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','peerless');
+                                    jQuery(clonedCard).find('.card-attributes').removeAttr('data-rank-next');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1356,10 +1376,10 @@
                                     jQuery(clonedCard).attr('data-resource-currency','0');
 
                                     // Update Levelling Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','20');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','20');
 
                                     // Update Resource Currency attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','0');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','0');
 
                                 } else if(cardForce >= 90 && cardForce != 100) {
 
@@ -1367,8 +1387,8 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
                                     // Update Rank attributes
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','elite');
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','peerless');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','elite');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank-next','peerless');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1386,10 +1406,10 @@
                                     jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i>');
 
                                     // Update Levelling Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','10');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','10');
 
                                     // Update Resource Currency attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','1');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','1');
 
                                 } else if(cardForce >= 80 && cardForce < 90) {
 
@@ -1397,8 +1417,8 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
                                     // Update Rank attributes
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','adept');
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','elite');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','adept');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank-next','elite');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1416,10 +1436,10 @@
                                     jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i><i class="fas fa-circle"></i>');
 
                                     // Update Levelling Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','5');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','5');
 
                                     // Update Resource Currency attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','2');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','2');
 
                                 } else if(cardForce >= 70 && cardForce < 80) {
 
@@ -1427,8 +1447,8 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i>');
 
                                     // Update Rank attributes
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','proficient');
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','adept');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','proficient');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank-next','adept');
 
                                     // Update Levelling Cost
                                     jQuery(clonedCard).find('.card-levelling-cost').prepend(
@@ -1446,18 +1466,18 @@
                                     jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i>');
 
                                     // Update Levelling Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','3');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','3');
 
                                     // Update Resource Currency attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','3');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','3');
 
                                 } else if(cardForce >= 25 && cardForce < 70) {
 
                                     jQuery(clonedCard).find('.cardFront').addClass('neophyte-ranking');
 
                                     // Update Rank attributes
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','neophyte');
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank-next','proficient');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','neophyte');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank-next','proficient');
 
                                     // Update Resource Currency
                                     if(cardForce >= 45 && cardForce < 70) {
@@ -1466,7 +1486,7 @@
                                         jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i>');
 
 	                                    // Update Resource Currency attribute
-	                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','4');
+	                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','4');
 
                                     } else if(cardForce >= 25 && cardForce < 45) {
 
@@ -1474,12 +1494,12 @@
                                         jQuery(clonedCard).find('.card-resource-currency').prepend('<i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i>');
 
 	                                    // Update Resource Currency attribute
-	                                    jQuery(clonedCard).find('.caster-attributes').attr('data-currency','5');
+	                                    jQuery(clonedCard).find('.card-attributes').attr('data-currency','5');
 
                                     }
 
                                     // Update Levelling Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','0');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','0');
 
                                 }
 
@@ -1525,7 +1545,6 @@
 						                                    <div class="card-attributes" 
 						                                    	data-type="${cardType}"
 						                                    	data-rank=""
-						                                    	data-force="${cardForce}"
 						                                    	data-cost="" 
 						                                    	data-discipline="${cardDiscipline}">
 						                                    </div>
@@ -1554,7 +1573,7 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>');
 
                                     // Update Rank attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','peerless');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','peerless');
 
                                     // TEMP : To be detemined by specific card
                                     jQuery(clonedCard).find('.card-resource-cost').prepend(
@@ -1568,7 +1587,7 @@
                                         );
 
                                     // Update Support Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','5');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','5');
 
                                 } else if(cardEfficacy >= 90 && cardEfficacy != 100) {
 
@@ -1576,7 +1595,7 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
                                     // Update Rank attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','elite');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','elite');
 
                                     // TEMP : To be detemined by specific card
                                     jQuery(clonedCard).find('.card-resource-cost').prepend(
@@ -1590,7 +1609,7 @@
                                         );
 
                                     // Update Support Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','4');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','4');
 
                                 } else if(cardEfficacy >= 80 && cardEfficacy < 90) {
 
@@ -1598,7 +1617,7 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i><i class="fas fa-star"></i>');
 
                                     // Update Rank attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','adept');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','adept');
 
                                     // TEMP : To be detemined by specific card
                                     jQuery(clonedCard).find('.card-resource-cost').prepend(
@@ -1612,7 +1631,7 @@
                                         );
 
                                     // Update Support Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','3');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','3');
 
                                 } else if(cardEfficacy >= 70 && cardEfficacy < 80) {
 
@@ -1620,7 +1639,7 @@
                                     jQuery(clonedCard).find('.card-ranking').prepend('<i class="fas fa-star"></i>');
 
                                     // Update Rank attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','proficient');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','proficient');
 
                                     // TEMP : To be detemined by specific card
                                     jQuery(clonedCard).find('.card-resource-cost').prepend(
@@ -1634,14 +1653,14 @@
                                         );
 
                                     // Update Support Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','2');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','2');
 
                                 } else if(cardEfficacy >= 15 && cardEfficacy < 70) {
 
                                     jQuery(clonedCard).find('.cardFront').addClass('neophyte-ranking');
 
                                     // Update Rank attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-rank','neophyte');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-rank','neophyte');
 
                                     // TEMP : To be detemined by specific card
                                     jQuery(clonedCard).find('.card-resource-cost').prepend(
@@ -1655,7 +1674,7 @@
                                         );
 
                                     // Update Support Cost attribute
-                                    jQuery(clonedCard).find('.caster-attributes').attr('data-cost','1');
+                                    jQuery(clonedCard).find('.card-attributes').attr('data-cost','1');
 
                                 }
 
@@ -2122,7 +2141,7 @@
                                     // Draw Preparation
                                     jQuery(playerHand).find('.standby-pile .idleCard').clone().appendTo(playerActiveHand).addClass('drawing-iteration-'+i).attr('data-iteration',i); // assign active state to standby card
 
-                                    current_activeCard = jQuery('.drawing-iteration-'+i); // store to variable
+                                    current_activeCard = jQuery(playerHand).find('.drawing-iteration-'+i); // store to variable
 
                                     jQuery(current_activeCard).css({'top': cardsInStandbyDeckCard_top, 
                                                                     'left': cardsInStandbyDeckCard_left, 
@@ -2149,7 +2168,7 @@
                                                                                                                         'height':cardApertureHeight
                                                                                                                         }); // in motion
                                         jQuery(current_activeCard).clone().appendTo(current_aperture).removeClass('activeCard drawing-iteration-'+i).addClass('ghostCard clone-iteration-'+i); // clone the modifeid card and add to open aperture
-                                        current_clonedCard = jQuery('.clone-iteration-'+i);
+                                        current_clonedCard = jQuery(playerHand).find('.clone-iteration-'+i);
                                         jQuery(current_clonedCard).css({'top':'0','left':'0'}); // lock in position
 
                                         // Reveal drawn card
@@ -2175,7 +2194,7 @@
 
 		                        setTimeout(function(){
 
-	                            	if(playerTurn) {
+	                            	if(playerTurn && !AIprocessing) {
 
 	                                    // Check for valid caster type cards
 	                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
@@ -2203,7 +2222,9 @@
 
 	                                    }  
 
-		                            } else if(AIprocessing) { // AI automated operations
+		                            } else if(!playerTurn && AIprocessing) { // AI automated operations
+
+		                            	// TODO : implement advanced acceptation parameters and conditions (where hand may still be discarded even if caster cards are present to play) 
 
 		                            	// Check for valid caster type cards
 	                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
@@ -2213,7 +2234,7 @@
 	                                            drawPhase = false; // end draw phase
 
 	                                            // determine if caster needs to be selected or is already present
-                    							let casterInPlay = jQuery('.in-play').find('.activeCaster').length;
+                    							let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
 
 	                                            if(casterInPlay == 0) { // no caster in play
 							                        casterSelectionPhase = true;
@@ -3753,6 +3774,9 @@
 
                     } else if(promoteRankPossibility()) { // check for standard levelling requirements
 
+	                    //Remove force nerfs
+	                    restoreForce();
+
 	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
 	                    currentPhase = 'levellingPhase';
 
@@ -5259,6 +5283,9 @@
 		        		// Determine if standard levelling is possible
 		        		if(promoteRankPossibility()) { // check for standard levelling requirements
 
+		                    //Remove force nerfs
+		                    restoreForce();
+
 		                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
 		                    currentPhase = 'levellingPhase';
 
@@ -5720,7 +5747,7 @@
             		forceValue,
             		forceMax;
 
-            	jQuery(playerHand).find(cardAperture+' '+cardType+' .caster-attributes').each(function(){
+            	jQuery(playerHand).find(cardAperture+' '+cardType+' .card-attributes').each(function(){
 
             		// Retrieve force value
             		forceValue = jQuery(this).attr('data-force');
@@ -5742,7 +5769,7 @@
             		forceValue,
             		forceMin;
 
-            	jQuery(playerHand).find(cardAperture+' '+cardType+' .caster-attributes').each(function(){
+            	jQuery(playerHand).find(cardAperture+' '+cardType+' .card-attributes').each(function(){
 
             		// Retrieve force value
             		forceValue = jQuery(this).attr('data-force');
@@ -5764,7 +5791,7 @@
             		resourceValue,
             		resourceMix;
 
-            	jQuery(playerHand).find(cardAperture+' '+cardType+' .caster-attributes').each(function(){
+            	jQuery(playerHand).find(cardAperture+' '+cardType+' .card-attributes').each(function(){
 
             		// Retrieve resource value
             		resourceValue = jQuery(this).attr('data-currency');
@@ -5786,7 +5813,7 @@
             		resourceValue,
             		resourceMin;
 
-            	jQuery(playerHand).find(cardAperture+' '+cardType+' .caster-attributes').each(function(){
+            	jQuery(playerHand).find(cardAperture+' '+cardType+' .card-attributes').each(function(){
 
             		// Retrieve resource value
             		resourceValue = jQuery(this).attr('data-currency');
@@ -5940,8 +5967,6 @@
 							// Assign card detials to attributes object
 							attributesObj.inHand['cardInHand'+i] = cardInHand;
 
-		           			console.log('player attributes:',attributesObj);
-
 		            });
 
 		        }
@@ -5955,13 +5980,11 @@
 
 				    // Constuct player attributes
 				    constructAttributes('player-field', attributesPlayer, PlayerAttributesConstr);
-				    console.log('player attributes: '+attributesPlayer);
 
 				} else if(!playerTurn) {
 
 				    // Constuct AI attributes
 				    constructAttributes('ai-field', attributesAI, AIAttributesConstr);
-				    console.log('ai attributes: '+attributesAI);
 
 				}
 
@@ -5996,7 +6019,7 @@
             	var forceMax = returnMaxForce(aiHand, '.valid-for-selection', '.neophyte-ranking');
 
             	// Find the card with the greatest force value and add selection class to card and reference classe to aperture
-            	jQuery(aiHand).find('.valid-for-selection .neophyte-ranking .caster-attributes').each(function(){
+            	jQuery(aiHand).find('.valid-for-selection .neophyte-ranking .card-attributes').each(function(){
 
             		if(jQuery(this).attr('data-force') == forceMax) {
 
@@ -6032,7 +6055,7 @@
 
 					if(!playerTurn) {
 
-						if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length == 1) {
+						if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length == 1) { // ...caster selection phase has just occurred, proceed to resource pooling phase
 
 			            	// Determine if valid card types are available to pool resources
 			            	if(jQuery(playerHand).find('.caster-card-type').length) {
@@ -6063,7 +6086,7 @@
 								console.log('no available cards to allocate to resource pooling')
 							}
 
-	                    } else if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length > 1) {
+	                    } else if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.card').length > 1) { // ...levelling phase has just occurred
 
                             // Debit resources after levelling
                             resourceTransaction('levellingPhase');
@@ -6071,7 +6094,7 @@
                             casterSelectionPhase = false;
 
 	                    	// Determine if player has caster in play 
-	                    	if(jQuery('[data-battle-field="player-field"] .in-play').find('.card').length > 0) {
+	                    	if(jQuery('[data-battle-field="player-field"] .in-play').find('.card').length == 0) { // ...no caster cards in play
 
 	                    		AIprocessing = false; // end AI processing
 
@@ -6182,10 +6205,10 @@
             		resourceCurrency,
             		resourceCurrencyAvailable = false;
 
-                resourceCurrency = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-discipline');
+                resourceCurrency = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .card-attributes').attr('data-discipline');
 
                 // Detemine if any resource currency of the same discipline is available
-                jQuery(aiHand).find('.valid-for-selection .card .caster-attributes').each(function(){
+                jQuery(aiHand).find('.valid-for-selection .card .card-attributes').each(function(){
 
 	            	if(jQuery(this).attr('data-discipline') == resourceCurrency) {
 
@@ -6196,7 +6219,7 @@
 
 	            });
 
-            	jQuery(aiHand).find('.valid-for-selection .card .caster-attributes').each(function(){
+            	jQuery(aiHand).find('.valid-for-selection .card .card-attributes').each(function(){
 
             		if(resourceCurrencyAvailable) { // ...if resource currency of the same discipline is available consider only the these values
 
@@ -6226,7 +6249,7 @@
             	resourceMax = Math.max.apply(null, resourceArray);
 
             	// Find the card with the greatest resource value and add selection class to card and reference class to aperture
-            	jQuery(aiHand).find('.valid-for-selection .card .caster-attributes').each(function(){
+            	jQuery(aiHand).find('.valid-for-selection .card .card-attributes').each(function(){
 
             		if(resourceCurrencyAvailable) { // ...if resource currency of the same discipline is available search for greatest value
 
@@ -6300,6 +6323,9 @@
 
                     		console.log('AI standard levelling phase');
 
+		                    //Remove force nerfs
+		                    restoreForce();
+
 		                    levellingPhase = true;
 		                    currentPhase = 'levellingPhase';
 
@@ -6307,14 +6333,14 @@
 			                guideInstruction = 'Levelling Caster...';
 			                updatePhaseGuide(guideInstruction,currentPhase);
 
-                    		var AIcasterNextRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-rank-next'),
-                    			AIcasterDiscipline = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .caster-attributes').attr('data-discipline');
+                    		var AIcasterNextRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .card-attributes').attr('data-rank-next'),
+                    			AIcasterDiscipline = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .card-attributes').attr('data-discipline');
 
                     		var forceMax = returnMaxForce(aiHand, '.valid-for-selection', '.'+AIcasterNextRank+'-ranking.'+AIcasterDiscipline+'-motiv');
 
                     		jQuery('.valid-for-selection').each(function(){
 
-                    			if(jQuery(this).find('.caster-attributes').attr('data-force') == forceMax) {
+                    			if(jQuery(this).find('.card-attributes').attr('data-force') == forceMax) {
                     				
                     				jQuery(this).addClass('AIfocus');
                     				jQuery(this).find('.card').addClass('casterSelection');
@@ -8883,3 +8909,28 @@
         </style>
     </body>
 </html>
+<!--
+
+if(AIprocessing)
+
+2206 - drawphase: confirmation and caster selection
+
+3196 - exiting out of player caster selection phase after player battle loss (!playerTurn)
+
+
+
+AIprocessing = true
+
+3235 - NO BATTLE/AFTER LOSS: exiting out of player levelling phase, AI hand preparation; must place caster into play
+
+2612 - turn outcome
+
+
+
+AIprocessing = false
+
+6076 - NO BATTLE/AFTER LOSS: allow player to place caster into play if none is present
+
+6146 - NO BATTLE/AFTER LOSS: AI has just placed caster back into play after loss (playerTurn)
+
+-->
