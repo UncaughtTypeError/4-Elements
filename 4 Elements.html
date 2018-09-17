@@ -707,7 +707,7 @@
                 } else if(casterConfirmationPhase) { 
 
                 	// Construct player attributes
-                	constructPlayerAttributes();
+                	constructPlayerAttributes(true, true);
 
                 	// end caster confirmation phase, proceed to resource pooling phase
                     toggleDialogueBox(false,false);
@@ -3166,7 +3166,7 @@
                     toggleDialogueBox(false,true);
 
                 	// Construct player attributes
-                	constructPlayerAttributes();
+                	constructPlayerAttributes(true, true);
 
                     //Remove force nerfs
                     restoreForce();
@@ -3183,8 +3183,9 @@
 	                }
 
                     setTimeout(function(){
-
-	                    if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length == 1) { // ...exiting out of caster selection phase
+                    	console.log('Player caster levelled?',attributesPlayer.isLevelledCaster);
+                    	if(!attributesPlayer.isLevelledCaster) {
+	                    //if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length == 1) { // ...exiting out of caster selection phase
 
 	                    	if(playerTurn) { // if palyer turn then proceed to resource pooling phase...
 
@@ -3239,7 +3240,8 @@
 
 			                }
 
-		                } else if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length > 1) { // ...exiting out of levelling phase
+		                } else if(attributesPlayer.isLevelledCaster) {
+		                //} else if(jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.card').length > 1) { // ...exiting out of levelling phase
 
 		                	// Debit resources after levelling
 		                	resourceTransaction('levellingPhase');
@@ -3247,7 +3249,9 @@
 		                    casterConfirmationPhase = false; // disallow UI key navigation
 
 	                    	// Determine if opponent has caster in play 
-	                    	if(jQuery('[data-battle-field="ai-field"] .in-play').find('.card').length <= 0) {
+                    		console.log('AI caster in play?',attributesAI.hasCasterInPlay);
+	                    	if(!attributesAI.hasCasterInPlay) {
+	                    	//if(jQuery('[data-battle-field="ai-field"] .in-play').find('.card').length <= 0) {
 
 	                    		if(battlePhaseTracker == 0) { // no battle phases have occurred, switch turns and proceed to draw phase
 
@@ -3297,7 +3301,7 @@
 
 				                }
 
-	                    	} else { // casters are in play, proceed to support phase
+	                    	} else { // both casters are in play, proceed to support phase
 
 				                supportSelectionPhase = true; // start draw phase 
 				                formerPhase = 'casterConfirmationPhase';
@@ -5923,33 +5927,30 @@
             	attributesPlayer,
             	attributesAI;
 
-            // Player attribute object constructors
-            function PlayerAttributesConstr(inPlayCaster, inHand, deckDesciplines) {
+            // Attribute object constructors
+            function AttributesConstr(hasCasterInPlay, inPlayCaster, isLevelledCaster, inHand, deckDesciplines) {
 
+            	this.hasCasterInPlay = hasCasterInPlay;
             	this.inPlayCaster = inPlayCaster;
-            	this.inHand = inHand;
-            	this.deckDisciplines = deckDisciplines;
-
-            }
-
-            // AI attribute object constructors
-            function AIAttributesConstr(inPlayCaster, inHand, deckDesciplines) {
-
-            	this.inPlayCaster = inPlayCaster;
+            	this.isLevelledCaster = isLevelledCaster;
             	this.inHand = inHand;
             	this.deckDisciplines = deckDisciplines;
 
             }
 
             // Construct player/AI attributes object for support reference and AI processing reference
-            function constructAttributes(field, attributesObj, attributesConstr) {
+            function constructAttributes(field) {
+
+            	var attributesObj;
 
 	            // Define player's in-play caster
+	            hasCasterInPlay = jQuery('[data-battle-field="'+field+'"] .in-play').find('.card').length >= 1 ? true : false;
 	            inPlayCaster = jQuery('[data-battle-field="'+field+'"] .in-play .card');
+	            isLevelledCaster = jQuery('[data-battle-field="'+field+'"] .in-play .card').length > 1 ? true : false;
 	            inHand = {};
 
 	            // Define player attributes object
-	            attributesObj = new attributesConstr(inPlayCaster, inHand, deckDisciplines);
+	            attributesObj = new AttributesConstr(hasCasterInPlay, inPlayCaster, isLevelledCaster, inHand, deckDisciplines);
 
 	            // Define cards in hand
 	            if(jQuery('[data-field="'+field+'"] .player-hand .card').length) {
@@ -5971,20 +5972,24 @@
 
 		        }
 
+				// Return object post construction
+				return attributesObj;
+
 		    }
 
 		    // Invoke applicable function to construct player/AI attributes
-		    function constructPlayerAttributes() {
+		    function constructPlayerAttributes(playerAttributes, aiAttributes) {
 
-		    	if(playerTurn) {
+		    	if(playerAttributes) {
 
 				    // Constuct player attributes
-				    constructAttributes('player-field', attributesPlayer, PlayerAttributesConstr);
+				    attributesPlayer = constructAttributes('player-field');
 
-				} else if(!playerTurn) {
+				}
+				if(aiAttributes) {
 
 				    // Constuct AI attributes
-				    constructAttributes('ai-field', attributesAI, AIAttributesConstr);
+				    attributesAI = constructAttributes('ai-field');
 
 				}
 
@@ -8915,7 +8920,7 @@ if(AIprocessing)
 
 2206 - drawphase: confirmation and caster selection
 
-3196 - exiting out of player caster selection phase after player battle loss (!playerTurn)
+3196 - NO BATTLE/AFTER LOSS: exiting out of player caster selection phase after player battle loss (!playerTurn)
 
 
 
