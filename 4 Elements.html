@@ -629,7 +629,7 @@
             // dismiss with keys
             function keyDialogueBoxDismissal() {
 
-            	if(Player_Session) {
+            	if(turnSelectionPhase || Player_Session) {
 
 	                jQuery(document).on('keydown',function(e) {
 
@@ -667,7 +667,7 @@
             // dismiss with mouse
             jQuery('.wrapper').on('click', '.dialogueBox-backdrop, .dialogueBox-dismiss', function(){
 
-            	if(Player_Session) {
+            	if(turnSelectionPhase || Player_Session) {
 
 	            	// Determine progression based on current phase
 	            	afterDialogueBoxDismissal();
@@ -681,227 +681,23 @@
 
                 if(handConfirmationPhase) {
 
-                    // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
-                    toggleDialogueBox(false,false);
-
-                    handConfirmationPhase = false; // end hand confirmation phase
-
-                    // determine if caster needs to be selected or is already present
-                    let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
-
-                    if(casterInPlay == 0) { // no caster in play
-
-                        casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
-                        formerPhase = 'handConfirmationPhase';
-                        currentPhase = 'casterSelectionPhase';
-
-                        // Update phase indicator
-                        updatePhaseIndicator();
-
-                        // Update and display phase guide
-                        guideInstruction = 'Place a valid caster card in play';
-                        updatePhaseGuide(guideInstruction,currentPhase);
-
-                        // Unmark valid selection options
-                        unmarkValidSelections();
-
-                        // Mark valid selection options
-                        markValidSelections('caster-card-type');
-
-                        // Nerf ranking higher than neophyte (proficient 1/2, adept 1/3, elite 1/4, peerless 1/5)
-                        setTimeout(function(){
-                            forceNerf();
-                        },500);
-
-                    } else {
-
-                    	// Determine if valid card types are available to pool resources
-			            if(jQuery(playerHand).find('.caster-card-type').length) {
-
-	                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-	                        formerPhase = 'handConfirmationPhase';
-	                        currentPhase = 'resourcePoolingPhase';
-
-	                        // Update phase indicator
-	                        updatePhaseIndicator();
-
-	                        // Update and display phase guide
-	                        guideInstruction = 'Allocate a valid caster card for resource pooling';
-	                        updatePhaseGuide(guideInstruction,currentPhase);
-
-	                        // Unmark valid selection options
-	                        unmarkValidSelections();
-
-	                        // Mark valid selection options
-	                        markValidSelections('caster-card-type');
-
-	                        // Display resource value tags
-	                        displayResourceValueTags();
-
-	                    }
-
-                    }
+                    determineHandConfirmation(playerHand,'true');
 
                 } else if(casterConfirmationPhase) { 
 
-                	// Construct player attributes
-                	constructPlayerAttributes(true, true); // player, ai
-
-                	// end caster confirmation phase, proceed to resource pooling phase
-                    toggleDialogueBox(false,false);
-
-                    // determine if caster needs to be selected or is already present
-                    let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
-
-                    if(casterInPlay == 0) { // no caster in play, caster has been rejected, revert back to selection phase
-
-	                	// Determine if valid card types are available to pool resources
-				        if(jQuery(playerHand).find('.caster-card-type').length) {
-
-		                    casterConfirmationPhase = false; // disallow UI key navigation
-		                    resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-		                    formerPhase = 'casterConfirmationPhase';
-		                    currentPhase = 'resourcePoolingPhase';
-
-		                    // Update phase indicator
-		                    updatePhaseIndicator();
-
-		                    // Update and display phase guide
-		                    guideInstruction = 'Allocate a valid caster card for resource pooling';
-		                    updatePhaseGuide(guideInstruction,currentPhase);
-
-		                    // Unmark valid selection options
-		                    unmarkValidSelections();
-
-		                    // Mark valid selection options
-		                    markValidSelections('caster-card-type');
-
-		                    // Display resource value tags
-		                    displayResourceValueTags();
-
-		                }
-
-                    } else if(casterInPlay > 1) { // levelled caster in play, caster has just been levelled, proceed to support phase if AI has caster in play, otherwise allow AI to select caster
-
-                    	// TODO : AI processing to follow
-
-                    }
+                	determineCasterConfirmation('true');
 
                 } else if(resourceConfirmationPhase) { 
 
-                    toggleDialogueBox(false,false);
-
-                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
-                    jQuery('.resource').removeClass('poolingResource'); // remove resource pool reference
-                    jQuery('.resource-aperture').removeClass('activeResource'); // remove aperture reference
-
-                    // Remove resource value tags
-                    removeResourceValueTags();
-
-                    resourceConfirmationPhase = false; // disallow UI key navigation
-		            formerPhase = 'resourceConfirmationPhase';
-
-                    // Unmark valid selection options
-                    unmarkValidSelections();
-
-                    // Determine if ranking is possible
-                    if(supportLevellingPossibility()) { // check for support leveling cards
-
-                    	// Allow enough time for previouse dialogue box to dismiss
-                    	setTimeout(function(){
-
-	                    	dialogueBoxContent =    `<div class="confirmation-prompt">
-				                                        <div class="dialogue-box-notice-emphasis">Leverage Levelling Support?</div>
-				                                        <div class="dialogue-box-notice-detail">
-				                                            Would you like to use the levelling support card detected in your hand?
-				                                        </div>
-				                                        <div class="confirm-options">
-				                                            <div class="btn btn-confirm focus" data-confirm="true">Yes</div>
-				                                            <div class="btn btn-confirm" data-confirm="false">No</div>
-				                                        </div>
-				                                    </div>`;
-
-				            if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
-				                jQuery('.dialogueBox .dialogueBox-body').prepend(dialogueBoxContent);
-				            }
-
-				            // call dialogue box
-				            toggleDialogueBox(false,true);
-
-				        },500);
-
-			            // Dismiss the current phase guide
-			            dismissPhaseGuide();
-
-			            proceedConfirmationPhase = true; // allow key selection
-			            currentPhase = 'proceedConfirmationPhase';
-
-			            // Update phase indicator
-			            updatePhaseIndicator();
-
-                    } else if(promoteRankPossibility()) { // check for standard levelling requirements
-
-	                    //Remove force nerfs
-	                    restoreForce();
-
-	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
-	                    currentPhase = 'levellingPhase';
-
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
-
-	                    // Update and display phase guide
-	                    guideInstruction = 'Select a valid caster card to promote to';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
-
-	                } else { // rank promotion not possible, proceed to Support Phase
-
-	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
-	                    currentPhase = 'supportSelectionPhase';
-
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
-
-	                    // Update and display phase guide
-	                    guideInstruction = 'Select a valid support card to place in play';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
-
-	                    // Unmark valid selection options
-	                    unmarkValidSelections();
-
-	                    // Mark valid selection options
-	                    markValidSelections('support-card-type');
-
-	                }
+                    determineResourceConfirmation('true');
 
                 } else if(supportConfirmationPhase) { 
 
-                    toggleDialogueBox(false,false);
+                    determineSupportConfirmation('true');
 
                 } else if(proceedConfirmationPhase) {
 
-                    toggleDialogueBox(false,false);
-
-                	if(formerPhase == 'resourceConfirmationPhase') {
-
-		                supportLevellingPhase = true; // start resource pooling phase and allow UI key navigation
-		                currentPhase = 'supportLevellingPhase';
-
-		                // Update phase indicator
-		                updatePhaseIndicator();
-
-		                // Update and display phase guide
-		                guideInstruction = 'Select a valid support levelling card to place in play';
-		                updatePhaseGuide(guideInstruction,currentPhase);
-
-		                // Mark valid selection options
-		                markValidSelections('levelling-card-type');
-
-		                // Prepare support card aperture
-		            	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
-		        		jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
-
-		        	}
+                    determineProgressionConfirmation('true');
 
                 } else {
                     toggleDialogueBox(false,false);
@@ -1922,15 +1718,17 @@
                 // Continue based on condition returned
                 if(handPermanence == 'true') { // player accepts hand
 
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
                     // end hand confirmation phase, proceed to next phase (caster select phase or resource pool phase)
                     toggleDialogueBox(false,false);
 
                     handConfirmationPhase = false; // end hand confirmation phase
 
                     // determine if caster needs to be selected or is already present
-                    let casterInPlay = jQuery('.in-play').find('.activeCaster').length;
+                    if(!attributesPlayer.hasCasterInPlay) { // no caster in play
 
-                    if(casterInPlay == 0) { // no caster in play
                         casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
                         formerPhase = 'handConfirmationPhase';
                         currentPhase = 'casterSelectionPhase';
@@ -1956,7 +1754,9 @@
                     } else {
 
                     	// Determine if valid card types are available to pool resources
-			            if(jQuery(playerHand).find('.caster-card-type').length) {
+                        var hasCasterType = isCardInHand(attributesAI.inHand, 'cardType', 'Caster');
+
+			            if(hasCasterType) {
 
 	                        resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
 	                        formerPhase = 'handConfirmationPhase';
@@ -1978,7 +1778,10 @@
 	                        // Display resource value tags
 	                        displayResourceValueTags();
 
-	                    }
+	                    } else {
+                            // TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
+                            console.log('no available cards to allocate to resource pooling');
+                        }
 
                     }
 
@@ -2244,10 +2047,15 @@
 
 		                        setTimeout(function(){
 
+                                    // Construct player attributes
+                                    constructPlayerAttributes(true, true); // player, ai
+
 	                            	if(Player_Session) {
 
+                                        var hasCasterType = isCardInHand(attributesPlayer.inHand, 'cardType', 'Caster');
+
 	                                    // Check for valid caster type cards
-	                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
+	                                    if(hasCasterType) { // valid caster type found
 
 	                                        setTimeout(function(){
 
@@ -2275,18 +2083,18 @@
 		                            } else if(AI_Session) { // AI automated operations
 
 		                            	// TODO : implement advanced acceptation parameters and conditions (where hand may still be discarded even if caster cards are present to play) 
+                                        var hasCasterType = isCardInHand(attributesAI.inHand, 'cardType', 'Caster');
 
 		                            	// Check for valid caster type cards
-	                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
+                                        if(hasCasterType) { // valid caster type found
 
 	                                        setTimeout(function(){
 
 	                                            drawPhase = false; // end draw phase
 
 	                                            // determine if caster needs to be selected or is already present
-                    							let casterInPlay = jQuery(playerField).find('.in-play .activeCaster').length;
+                                                if(!attributesAI.hasCasterInPlay) { // no caster in play
 
-	                                            if(casterInPlay == 0) { // no caster in play
 							                        casterSelectionPhase = true;
 							                        formerPhase = 'handConfirmationPhase';
 							                        currentPhase = 'casterSelectionPhase';
@@ -2310,12 +2118,11 @@
 							                        	AIcasterSelection(playerHand);
 							                        },1000);
 
-                                            		console.log('AIcasterSelection');
-
 							                    } else {
 
-									            	// Determine if valid card types are available to pool resources
-									            	if(jQuery(playerHand).find('.caster-card-type').length) {
+                                                        // Determine if valid card types are available to pool resources
+                                                        //if(jQuery(playerHand).find('.caster-card-type').length) {
+                                                        if(hasCasterType) {
 
 								                        resourcePoolingPhase = true;
 								                        formerPhase = 'handConfirmationPhase';
@@ -2338,11 +2145,9 @@
 								                        	AIresourceSelection(playerHand);
 								                        },1000);
 
-	                                            		console.log('AIresourceSelection');
-
 	                                            	} else {
 														// TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
-														console.log('no available cards to allocate to resource pooling')
+														console.log('no available cards to allocate to resource pooling');
 													}
 
 							                    }
@@ -2371,20 +2176,37 @@
 
                                 setTimeout(function(){
 
-                                    // Check for valid caster type cards
-                                    if(jQuery(playerHand).find('.card-aperture .caster-card-type').length > 0) { // valid caster type found
+                                    // Construct player attributes
+                                    constructPlayerAttributes(true, true); // player, ai
 
-                                        drawPhase = false; // end draw phase
-                                        casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
+                                    // Check for valid caster type cards
+                                    if(Player_Session) {
+
+                                        var hasCasterType = isCardInHand(attributesPlayer.inHand, 'cardType', 'Caster');
+
+                                    } else if(AI_Session) {
+
+                                        var hasCasterType = isCardInHand(attributesAI.inHand, 'cardType', 'Caster');
+
+                                    }
+
+                                    if(hasCasterType) { // valid caster type found
+
+                                        drawPhase = false;
+                                        casterSelectionPhase = true;
                                         formerPhase = 'drawPhase';
                                         currentPhase = 'casterSelectionPhase';
 
                                         // Update phase indicator
                                         updatePhaseIndicator();
 
-                                        // Update and display phase guide
-                                        guideInstruction = 'Place a valid caster card in play';
-                                        updatePhaseGuide(guideInstruction,currentPhase);
+                                        if(Player_Session) {
+
+                                            // Update and display phase guide
+                                            guideInstruction = 'Place a valid caster card in play';
+                                            updatePhaseGuide(guideInstruction,currentPhase);
+
+                                        }
 
                                         // Unmark valid selection options
                                         unmarkValidSelections();
@@ -2396,6 +2218,15 @@
                                         setTimeout(function(){
                                             forceNerf();
                                         },500);
+
+                                        if(AI_Session) {
+
+                                            // AI caster selection
+                                            setTimeout(function(){
+                                                AIcasterSelection(playerHand);
+                                            },1000);
+
+                                        }
 
                                     // Validate hand after draw
                                     } else { // no valid caster type found
@@ -2692,12 +2523,12 @@
                 // determine player turn and generate dialogue box content
                 if (playerTurn) {
                     dialogueBoxContent =    `<div class="turn-result">
-                                                1<sup>st</sup> Turn
+                                                1<sup>st</sup> Draw
                                                 <div class="turn-order">You draw first</div>
                                             </div>`;
                 } else {
                     dialogueBoxContent =    `<div class="turn-result">
-                                                2<sup>nd</sup> Turn
+                                                2<sup>nd</sup> Draw
                                                 <div class="turn-order">You draw second</div>
                                             </div>`;
                 }
@@ -3223,6 +3054,9 @@
                 // Continue based on condition returned
                 if(confirmCaster == 'true') { // player accepts caster
 
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
                     toggleDialogueBox(false,true);
 
                 	// Construct player attributes
@@ -3245,7 +3079,7 @@
                     setTimeout(function(){
 
                     	// Determine progression based field conditions
-                    	afterCasterSelection();
+                    	beforeSupportPhase();
 
 		            },500);
 
@@ -3460,286 +3294,363 @@
             */
 
             // Determine progression based on field conditions
-            function afterCasterSelection() {
+            function beforeSupportPhase() {
 
-			    if(playerTurn) {
+                if(playerTurn) {
 
-			        if(!attributesPlayer.isLevelledCaster) { // ...caster selection phase has just occurred, proceed to resource pooling phase
+                    if(!attributesPlayer.isLevelledCaster) { // ...caster selection or resource pooling phase has just occurred
 
-			            // Determine if valid card types are available to pool resources
-			            if(jQuery(playerHand).find('.caster-card-type').length) {
+                        if(casterConfirmationPhase) {
+                        
+                            // Determine if valid card types are available to pool resources
+                            var hasCasterType = isCardInHand(attributesPlayer.inHand, 'cardType', 'Caster');
 
-			                casterConfirmationPhase = false; // disallow UI key navigation
-			                resourcePoolingPhase = true; // start resource pooling phase and allow UI key navigation
-			                formerPhase = 'casterConfirmationPhase';
-			                currentPhase = 'resourcePoolingPhase';
+                            if(hasCasterType) {
 
-			                // Update phase indicator
-			                updatePhaseIndicator();
+                                casterConfirmationPhase = false; 
+                                resourcePoolingPhase = true; 
+                                formerPhase = 'casterConfirmationPhase';
+                                currentPhase = 'resourcePoolingPhase';
 
-			                // Update and display phase guide
-			                guideInstruction = 'Allocate a valid caster card for resource pooling';
-			                updatePhaseGuide(guideInstruction,currentPhase);
+                                // Update phase indicator
+                                updatePhaseIndicator();
 
-			                // Unmark valid selection options
-			                unmarkValidSelections();
+                                // Update and display phase guide
+                                guideInstruction = 'Allocate a valid caster card for resource pooling';
+                                updatePhaseGuide(guideInstruction,currentPhase);
 
-			                // Mark valid selection options
-			                markValidSelections('caster-card-type');
+                                // Unmark valid selection options
+                                unmarkValidSelections();
 
-			                // Display resource value tags
-			                displayResourceValueTags();
+                                // Mark valid selection options
+                                markValidSelections('caster-card-type');
 
-			            } else {
-			                // TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
-			                console.log('no available cards to allocate to resource pooling')
-			            }
+                                // Display resource value tags
+                                displayResourceValueTags();
 
-			        } else if(attributesPlayer.isLevelledCaster) { // ...levelling phase has just occurred
+                            } else {
+                                // TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
+                                console.log('no available cards to allocate to resource pooling');
+                            }
 
-			            // Debit resources after levelling
-			            resourceTransaction('levellingPhase');
+                        } else if(resourceConfirmationPhase) {
 
-			            casterConfirmationPhase = false; // disallow UI key navigation
+                            // Verify adversaries in play
+                            adversaryValidation(attributesAI);
 
-			            // Determine if opponent has caster in play 
-			            if(!attributesAI.hasCasterInPlay) {
+                        }
 
-			                // TODO : notify player that opponent has no card, proceed after player confirmation
+                    } else if(attributesPlayer.isLevelledCaster) { // ...levelling phase has just occurred
 
-			                switchActiveSessions(); // switch to AI session
+                        // Debit resources after levelling
+                        resourceTransaction('levellingPhase');
 
-			                if(battlePhaseTracker == 0) { // no battle phases have occurred, switch turns and proceed to draw phase
+                        // Determine if opponent has caster in play 
+                        adversaryValidation(attributesAI);
 
-			                    playerTurn = false;
-			                    // Set turn indicator
-			                    jQuery('[data-field="ai-field"] .turn-indicator').addClass('activeTurn');
-			                    jQuery('[data-field="player-field"] .turn-indicator').removeClass('activeTurn');
+                    }
+                                            
+                } else if(!playerTurn) {
 
-			                    drawPhase = true; // start draw phase 
-			                    formerPhase = 'casterConfirmationPhase';
-			                    currentPhase = 'drawPhase';
+                    if(!attributesAI.isLevelledCaster) { // ...caster selection or resource pooling phase has just occurred
 
-			                    // Update phase indicator
-			                    updatePhaseIndicator();
+                        if(casterSelectionPhase) {
 
-			                    beginDrawPhase();
+                            // Determine if valid card types are available to pool resources
+                            var hasCasterType = isCardInHand(attributesAI.inHand, 'cardType', 'Caster');
 
-			                } else { // a battle phase has occurred, switch hands, retain turns
+                            if(hasCasterType) {
 
-			                    // switch to ai hand
-			                    playerHand = jQuery('[data-field="ai-field"]');
-			                    fieldInContext = jQuery(playerHand).attr('data-field');
+                                casterSelectionPhase = false;
+                                resourcePoolingPhase = true;
+                                formerPhase = 'casterSelectionPhase';
+                                currentPhase = 'resourcePoolingPhase';
 
-			                    // Determine if opponent has caster in hand
-			                    if(jQuery(playerHand).find('.player-hand .caster-card-type').length > 0) { // valid caster type found
+                                // Update phase indicator
+                                updatePhaseIndicator();
 
-			                        casterSelectionPhase = true;
-			                        formerPhase = 'casterConfirmationPhase';
-			                        currentPhase = 'casterSelectionPhase';
+                                // Unmark valid selection options
+                                unmarkValidSelections();
 
-			                        // Update phase indicator
-			                        updatePhaseIndicator();
+                                // Mark valid selection options
+                                markValidSelections('caster-card-type');
 
-			                        // Unmark valid selection options
-			                        unmarkValidSelections();
+                                // Display resource value tags
+                                displayResourceValueTags();
 
-			                        // Mark valid selection options
-			                        markValidSelections('caster-card-type');
+                                // AI resource selection
+                                setTimeout(function(){
+                                    AIresourceSelection(playerHand);
+                                },1000);
 
-			                        // Nerf ranking higher than neophyte (proficient 1/2, adept 1/3, elite 1/4, peerless 1/5)
-			                        setTimeout(function(){
-			                            forceNerf();
-			                        },500);
+                            } else {
+                                // TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
+                                console.log('no available cards to allocate to resource pooling');
+                            }
 
-			                        // AI caster selection
-			                        setTimeout(function(){
-			                            AIcasterSelection(playerHand);
-			                        },1000);
+                        } else if(resourcePoolingPhase) {
 
-			                    } else { // no valid caster type cards detected, draw new hand
+                            // Verify adversaries in play
+                            adversaryValidation(attributesPlayer);
 
-			                        drawPhase = true; // start draw phase 
-			                        formerPhase = 'casterConfirmationPhase';
-			                        currentPhase = 'drawPhase';
+                        }
 
-			                        // Update phase indicator
-			                        updatePhaseIndicator();
+                    } else if(attributesAI.isLevelledCaster) { // ...levelling phase has just occurred
 
-			                        drawCards(playerHand);
-			                    }
+                        // Debit resources after levelling
+                        resourceTransaction('levellingPhase');
 
-			                }
+                        casterSelectionPhase = false;
 
-			            } else { // both casters are in play, proceed to support phase
+                        // Determine if player has caster in play 
+                        adversaryValidation(attributesPlayer);
 
-			                switchActiveSessions(); // switch to AI session
+                    }
 
-			                // switch to ai hand
-			                playerHand = jQuery('[data-field="ai-field"]');
-			                fieldInContext = jQuery(playerHand).attr('data-field');
+                }
 
-			                supportSelectionPhase = true; // start draw phase 
-			                formerPhase = 'casterConfirmationPhase';
-			                currentPhase = 'supportSelectionPhase';
+            }
 
-			                // Update phase indicator
-			                updatePhaseIndicator();
+            // Verify adversaries in play
+            function adversaryValidation(attributesObject) {
 
-			                // Unmark valid selection options
-			                unmarkValidSelections();
+                // Determine if opponent has caster in play 
+                if(!attributesObject.hasCasterInPlay) {
 
-			                // Mark valid selection options
-			                markValidSelections('support-card-type');
+                    // TODO : notify player that opponent has no card, proceed after player confirmation
 
-			                // AI support selection
-			                setTimeout(function(){
-			                    AIsupportSelection(playerHand);
-			                },1000);
+                    if(battlePhaseTracker == 0) { // no battle phases have occurred, switch turns and proceed to draw phase
 
-			            }
+                        if(Player_Session) {
 
-			        }
-			                                
-			    } else if(!playerTurn) {
+                            switchActiveSessions(); // switch sessions
 
-			        if(!attributesAI.isLevelledCaster) { // ...caster selection phase has just occurred, proceed to resource pooling phase
+                            // Update turn
+                            playerTurn = false;
+                            
+                            // Set turn indicator
+                            jQuery('[data-field="ai-field"] .turn-indicator').addClass('activeTurn');
+                            jQuery('[data-field="player-field"] .turn-indicator').removeClass('activeTurn');
 
-			            // Determine if valid card types are available to pool resources
-			            if(jQuery(playerHand).find('.caster-card-type').length) {
+                            if(casterConfirmationPhase) {
 
-			                resourcePoolingPhase = true;
-			                formerPhase = 'casterSelectionPhase';
-			                currentPhase = 'resourcePoolingPhase';
+                                casterConfirmationPhase = false
+                                formerPhase = 'casterConfirmationPhase';
 
-			                // Update phase indicator
-			                updatePhaseIndicator();
+                            } else if(resourceConfirmationPhase) {
 
-			                // Unmark valid selection options
-			                unmarkValidSelections();
+                                resourceConfirmationPhase = false
+                                formerPhase = 'resourceConfirmationPhase';
 
-			                // Mark valid selection options
-			                markValidSelections('caster-card-type');
+                            }
 
-			                // Display resource value tags
-			                displayResourceValueTags();
+                            drawPhase = true; // start draw phase 
+                            currentPhase = 'drawPhase';
 
-			                // AI resource selection
-			                setTimeout(function(){
-			                    AIresourceSelection(playerHand);
-			                },1000);
+                        } else if(AI_Session) {
 
-			            } else {
-			                // TODO : invoke dialogue box to inform player, dismiss after timed delay, proceed to levelling or support selection phase
-			                console.log('no available cards to allocate to resource pooling')
-			            }
+                            switchActiveSessions(); // switch sessions
 
-			        } else if(attributesAI.isLevelledCaster) { // ...levelling phase has just occurred
+                            // Update turn
+                            playerTurn = true;
 
-			            // Debit resources after levelling
-			            resourceTransaction('levellingPhase');
+                            // Set turn indicator
+                            jQuery('[data-field="player-field"] .turn-indicator').addClass('activeTurn');
+                            jQuery('[data-field="ai-field"] .turn-indicator').removeClass('activeTurn');
 
-			            casterSelectionPhase = false;
+                            if(casterSelectionPhase) {
 
-			            // Determine if player has caster in play 
-			            if(!attributesPlayer.hasCasterInPlay) { // ...no caster cards in play
+                                casterSelectionPhase = false
+                                formerPhase = 'casterSelectionPhase';
+                                
+                            } else if(resourcePoolingPhase) {
 
-			                switchActiveSessions(); // switch to player session
+                                resourcePoolingPhase = false
+                                formerPhase = 'resourcePoolingPhase';
+                                
+                            }
 
-			                if(battlePhaseTracker == 0) { // no battle phases have occurred, switch turns and proceed to draw phase
+                            drawPhase = true; // start draw phase 
+                            currentPhase = 'drawPhase';
 
-			                    playerTurn = true;
-			                    // Set turn indicator
-			                    jQuery('[data-field="player-field"] .turn-indicator').addClass('activeTurn');
-			                    jQuery('[data-field="ai-field"] .turn-indicator').removeClass('activeTurn');
+                        }
 
-			                    drawPhase = true; // start draw phase 
-			                    formerPhase = 'casterSelectionPhase';
-			                    currentPhase = 'drawPhase';
+                        // Update phase indicator
+                        updatePhaseIndicator();
 
-			                    // Update phase indicator
-			                    updatePhaseIndicator();
+                        beginDrawPhase();
 
-			                    beginDrawPhase();
+                    } else { // a battle phase has occurred, switch hands, retain turns
 
-			                } else { // a battle phase has occurred, switch hands, retain turns
+                        // switch hands based on current session
+                        if(Player_Session) {
 
-			                    // switch to player hand
-			                    playerHand = jQuery('[data-field="player-field"]');
-			                    fieldInContext = jQuery(playerHand).attr('data-field');
+                            switchActiveSessions(); // switch sessions
 
-			                    // Determine if opponent has caster in hand
-			                    if(jQuery(playerHand).find('.player-hand .caster-card-type').length > 0) { // valid caster type found
+                            playerHand = jQuery('[data-field="ai-field"]');
+                            fieldInContext = jQuery(playerHand).attr('data-field');
 
-			                        casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
-			                        formerPhase = 'casterSelectionPhase';
-			                        currentPhase = 'casterSelectionPhase';
+                            if(casterConfirmationPhase) {
 
-			                        // Update phase indicator
-			                        updatePhaseIndicator();
+                                casterConfirmationPhase = false
+                                formerPhase = 'casterConfirmationPhase';
 
-			                        // Update and display phase guide
-			                        guideInstruction = 'Place a valid caster card in play';
-			                        updatePhaseGuide(guideInstruction,currentPhase);
+                            } else if(resourceConfirmationPhase) {
 
-			                        // Unmark valid selection options
-			                        unmarkValidSelections();
+                                casterConfirmationPhase = false
+                                formerPhase = 'resourceConfirmationPhase';
 
-			                        // Mark valid selection options
-			                        markValidSelections('caster-card-type');
+                            }
 
-			                        // Nerf ranking higher than neophyte (proficient 1/2, adept 1/3, elite 1/4, peerless 1/5)
-			                        setTimeout(function(){
-			                            forceNerf();
-			                        },500);
+                        } else if(AI_Session) {
 
-			                    } else { // no valid caster type cards detected, draw new hand
+                            switchActiveSessions(); // switch sessions
 
-			                        drawPhase = true; // start draw phase 
-			                        formerPhase = 'casterSelectionPhase';
-			                        currentPhase = 'drawPhase';
+                            playerHand = jQuery('[data-field="player-field"]');
+                            fieldInContext = jQuery(playerHand).attr('data-field');
 
-			                        // Update phase indicator
-			                        updatePhaseIndicator();
+                            if(casterSelectionPhase) {
 
-			                        drawCards(playerHand);
+                                casterSelectionPhase = false
+                                formerPhase = 'casterSelectionPhase';
+                                
+                            } else if(resourcePoolingPhase) {
 
-			                    }
+                                resourcePoolingPhase = false
+                                formerPhase = 'resourcePoolingPhase';
+                                
+                            }
 
-			                }
+                        }
 
-			            } else { // both casters are in play, proceed to support phase
+                        // Determine if opponent has caster in hand
+                        var hasCasterType = isCardInHand(attributesAI.inHand, 'cardType', 'Caster');
 
-			                switchActiveSessions(); // switch to player session
+                        //if(jQuery(playerHand).find('.player-hand .caster-card-type').length > 0) { // valid caster type found
+                        if(hasCasterType) { // valid caster type found
 
-			                // switch to player hand, retain turns
-			                playerHand = jQuery('[data-field="player-field"]');
-			                fieldInContext = jQuery(playerHand).attr('data-field');
+                            casterSelectionPhase = true;
+                            currentPhase = 'casterSelectionPhase';
 
-			                supportSelectionPhase = true; // start draw phase 
-			                formerPhase = 'casterSelectionPhase';
-			                currentPhase = 'supportSelectionPhase';
+                            // Update phase indicator
+                            updatePhaseIndicator();
 
-			                // Update phase indicator
-			                updatePhaseIndicator();
+                            if(Player_Session) {
 
-			                // Update and display phase guide
-			                guideInstruction = 'Select a valid support card to place in play';
-			                updatePhaseGuide(guideInstruction,currentPhase);
+                                // Update and display phase guide
+                                guideInstruction = 'Place a valid caster card in play';
+                                updatePhaseGuide(guideInstruction,currentPhase);
 
-			                // Unmark valid selection options
-			                unmarkValidSelections();
+                            }
 
-			                // Mark valid selection options
-			                markValidSelections('support-card-type');
+                            // Unmark valid selection options
+                            unmarkValidSelections();
 
-			            }
+                            // Mark valid selection options
+                            markValidSelections('caster-card-type');
 
-			        }
+                            // Nerf ranking higher than neophyte (proficient 1/2, adept 1/3, elite 1/4, peerless 1/5)
+                            setTimeout(function(){
+                                forceNerf();
+                            },500);
 
-			    }
+                            if(AI_Session) {
 
-			}
+                                // AI caster selection
+                                setTimeout(function(){
+                                    AIcasterSelection(playerHand);
+                                },1000);
+
+                            }
+
+                        } else { // no valid caster type cards detected, draw new hand
+
+                            drawPhase = true; // start draw phase 
+                            currentPhase = 'drawPhase';
+
+                            // Update phase indicator
+                            updatePhaseIndicator();
+
+                            drawCards(playerHand);
+                        }
+
+                    }
+
+                } else { // both casters are in play, proceed to support phase
+
+                    // switch hands based on current session
+                    if(Player_Session) {
+
+                        switchActiveSessions(); // switch sessions
+
+                        playerHand = jQuery('[data-field="ai-field"]');
+                        fieldInContext = jQuery(playerHand).attr('data-field');
+
+                        if(casterConfirmationPhase) {
+
+                            casterConfirmationPhase = false
+                            formerPhase = 'casterConfirmationPhase';
+
+                        } else if(resourceConfirmationPhase) {
+
+                            resourceConfirmationPhase = false
+                            formerPhase = 'resourceConfirmationPhase';
+
+                        }
+
+                    } else if(AI_Session) {
+
+                        switchActiveSessions(); // switch sessions
+
+                        playerHand = jQuery('[data-field="player-field"]');
+                        fieldInContext = jQuery(playerHand).attr('data-field');
+
+                        if(casterSelectionPhase) {
+
+                            casterSelectionPhase = false
+                            formerPhase = 'casterSelectionPhase';
+                            
+                        } else if(resourcePoolingPhase) {
+
+                            resourcePoolingPhase = false
+                            formerPhase = 'resourcePoolingPhase';
+                            
+                        }
+
+                    }
+
+                    supportSelectionPhase = true; 
+                    currentPhase = 'supportSelectionPhase';
+
+                    // Update phase indicator
+                    updatePhaseIndicator();
+
+                    if(Player_Session) {
+
+                        // Update and display phase guide
+                        guideInstruction = 'Select a valid support card to place in play';
+                        updatePhaseGuide(guideInstruction,currentPhase);
+
+                    }
+
+                    // Unmark valid selection options
+                    unmarkValidSelections();
+
+                    // Mark valid selection options
+                    markValidSelections('support-card-type');
+
+                    if(AI_Session) {
+
+                        // AI support selection
+                        setTimeout(function(){
+                            AIsupportSelection(playerHand);
+                        },1000);
+
+                    }
+
+                }
+
+            }
 
             /*
             **
@@ -3816,6 +3727,9 @@
                 // Continue based on condition returned
                 if(confirmResource == 'true') { // player confirms resource
 
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
                     toggleDialogueBox(false,true);
 
                     jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
@@ -3824,9 +3738,6 @@
 
                     // Remove resource value tags
                     removeResourceValueTags();
-
-                    resourceConfirmationPhase = false; // disallow UI key navigation
-		            formerPhase = 'resourceConfirmationPhase';
 
                     // Unmark valid selection options
                     unmarkValidSelections();
@@ -3860,8 +3771,10 @@
 			            // Dismiss the current phase guide
 			            dismissPhaseGuide();
 
+                        resourceConfirmationPhase = false; // disallow UI key navigation
 			            proceedConfirmationPhase = true; // allow key selection
 			            currentPhase = 'proceedConfirmationPhase';
+                        formerPhase = 'resourceConfirmationPhase';
 
 			            // Update phase indicator
 			            updatePhaseIndicator();
@@ -3871,8 +3784,10 @@
 	                    //Remove force nerfs
 	                    restoreForce();
 
+                        resourceConfirmationPhase = false; // disallow UI key navigation
 	                    levellingPhase = true; // start resource pooling phase and allow UI key navigation
 	                    currentPhase = 'levellingPhase';
+                        formerPhase = 'resourceConfirmationPhase';
 
 	                    // Update phase indicator
 	                    updatePhaseIndicator();
@@ -3881,23 +3796,14 @@
 	                    guideInstruction = 'Select a valid caster card to promote to';
 	                    updatePhaseGuide(guideInstruction,currentPhase);
 
-	                } else { // rank promotion not possible, proceed to Support Phase
+	                } else { // rank promotion not possible, determine next phase
 
-	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
-	                    currentPhase = 'supportSelectionPhase';
+                        setTimeout(function(){
 
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
+                            // Determine progression based field conditions
+                            beforeSupportPhase();
 
-	                    // Update and display phase guide
-	                    guideInstruction = 'Select a valid support card to place in play';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
-
-	                    // Unmark valid selection options
-	                    unmarkValidSelections();
-
-	                    // Mark valid selection options
-	                    markValidSelections('support-card-type');
+                        },500);
 
 	                }
 
@@ -3979,7 +3885,7 @@
 
                 // Calculate resource pool wealth
                 resourceCurrentCount = Number(jQuery(placeholder).parent('.resource').find('.resource-counter').attr('data-pool-wealth'));
-                resourceCurrency = jQuery(resourceSelection).attr('data-resource-currency');
+                resourceCurrency = Number(jQuery(resourceSelection).attr('data-resource-currency'));
                 resourceUpdatedCount = resourceCurrentCount += resourceCurrency;
 
                 setTimeout(function(){
@@ -4434,6 +4340,9 @@
                 // Continue based on condition returned
                 if(confirmSupport == 'true') { // player confirms support
 
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
                     toggleDialogueBox(false,true);
 
                     // Remove card tether reference
@@ -4640,7 +4549,17 @@
             	resourceAdjustmentIteration = 0;	// iteration counter for visual adjustments to pool totals
 
             // Calculate and debit resource transactions for support and levelling costs
-            function resourceTransaction(phase) {
+            function resourceTransaction(phase) 
+
+                if(Player_Session) { 
+
+                    playerField = 'player-field';
+
+                } else if(AI_Session) {
+
+                    playerField = 'ai-field';
+
+                }
 
             	if(phase == 'levellingPhase') {
 
@@ -5317,6 +5236,9 @@
                 // Continue based on condition returned
                 if(confirmProgression == 'true') { // player accepts support levelling
 
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
                     toggleDialogueBox(false,true);
 
                 	if(formerPhase == 'resourceConfirmationPhase') {
@@ -5556,6 +5478,15 @@
                                 notApplicableEl     = '';
 
                         } else if (resourceConfirmationPhase && Player_Session) {
+
+                            var elClass             = '.btn',
+                                parentEl            = '.confirm-options',
+                                callbackFunction    = keyConfirmation,
+                                returnFunction      = afterDialogueBoxDismissal,
+                                applicableEl        = '.btn-confirm',
+                                notApplicableEl     = '';
+
+                        } else if (supportConfirmationPhase && Player_Session) {
 
                             var elClass             = '.btn',
                                 parentEl            = '.confirm-options',
@@ -6046,15 +5977,58 @@
 
 				    // Constuct player attributes
 				    attributesPlayer = constructAttributes('player-field');
+				    //console.log(attributesPlayer);
 
 				}
 				if(aiAttributes) {
 
 				    // Constuct AI attributes
 				    attributesAI = constructAttributes('ai-field');
+				    //console.log(attributesAI);
 
 				}
 
+			}
+
+			// Check if card exists by finding specified object property value
+			function isCardInHand(obj, prop, val) {
+
+                var objProp;
+
+                switch(prop) {
+                    case 'cardDiscipline' :
+                        objProp = obj.cardDiscipline;
+                        break;
+                    case 'cardRanking' :
+                        objProp = obj.cardRanking;
+                        break;
+                    case 'cardTitle' :
+                        objProp = obj.cardTitle;
+                        break;
+                    case 'cardType' :
+                        objProp = obj.cardType;
+                        break;
+                    default :
+                        //console.log('no case for property value '+prop);
+                }
+
+			    //Early return
+			    if( objProp === val ){
+			      return obj;
+			    }
+			    var isInHand,
+                    prop;
+			    for (prop in obj) {
+			        if( obj.hasOwnProperty(prop) && typeof obj[prop] === 'object') {
+                        isInHand = isCardInHand(obj[prop], val);
+			            if(isInHand){
+                            isInHand = true;
+			                return isInHand;
+			            }
+			        }
+			    }
+                isInHand = false;
+			    return isInHand;
 			}
 
             /*
@@ -6101,29 +6075,36 @@
                 casterSelection = jQuery('.casterSelection');
                 aiField = jQuery(aiHand).attr('data-field');
 
-				placeInPlay(casterSelection, aiField, cardAperture);
+                setTimeout(function(){
 
-				// Delayed Upkeep
-				setTimeout(function(){
+    				placeInPlay(casterSelection, aiField, cardAperture);
 
-                    //Remove force nerfs
-                    restoreForce();
+    				// Delayed Upkeep
+    				setTimeout(function(){
 
-                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
-                    jQuery('.card-aperture').removeClass('AIfocus'); // remove card card aperture reference
+                    	// Construct player attributes
+                    	constructPlayerAttributes(true, true); // player, ai
 
-                    // Reset hitpoint reversal reference
-                    jQuery('[data-battle-field="'+aiField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0');
+                        //Remove force nerfs
+                        restoreForce();
 
-                    // Remove the activeCaster class on any caster cards lower down the stacking order (essential for Levelling Phases)
-                    if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').length > 1) {
-                        jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
-                    }
+                        jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                        jQuery('.card-aperture').removeClass('AIfocus'); // remove card card aperture reference
 
-                    // Determine progression based on field conditions
-                    afterCasterSelection();
+                        // Reset hitpoint reversal reference
+                        jQuery('[data-battle-field="'+aiField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0');
 
-				},2000);
+                        // Remove the activeCaster class on any caster cards lower down the stacking order (essential for Levelling Phases)
+                        if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').length > 1) {
+                            jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
+                        }
+
+                        // Determine progression based on field conditions
+                        beforeSupportPhase();
+
+    				},2000);
+
+                },1000);
 
             }
 
@@ -6227,29 +6208,29 @@
             	cardAperture = jQuery('.valid-for-selection.AIfocus');
                 resourceSelection = jQuery('.resourceSelection');
                 aiField = jQuery(aiHand).attr('data-field');
+                
+                setTimeout(function(){
 
-				placeInPool(resourceSelection, aiField, cardAperture);
+				    placeInPool(resourceSelection, aiField, cardAperture);
 
-				// Delayed Upkeep
-				setTimeout(function(){
+    				// Delayed Upkeep
+    				setTimeout(function(){
 
-                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
-                    jQuery('.card-aperture').removeClass('AIfocus'); // remove card card aperture reference
-                    jQuery('.resource').removeClass('poolingResource'); // remove resource pool reference
-                    jQuery('.resource-aperture').removeClass('activeResource'); // remove aperture reference
+                        // Construct player attributes
+                        constructPlayerAttributes(true, true); // player, ai
 
-                    // Remove resource value tags
-                    removeResourceValueTags();
+                        jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                        jQuery('.card-aperture').removeClass('AIfocus'); // remove card card aperture reference
+                        jQuery('.resource').removeClass('poolingResource'); // remove resource pool reference
+                        jQuery('.resource-aperture').removeClass('activeResource'); // remove aperture reference
 
-                    resourcePoolingPhase = false;
-                    formerPhase = 'resourcePoolingPhase';
+                        // Remove resource value tags
+                        removeResourceValueTags();
 
-                    // Unmark valid selection options
-                    unmarkValidSelections();
+                        // Unmark valid selection options
+                        unmarkValidSelections();
 
-					if(!playerTurn) {
-
-						// Determine if ranking is possible
+    					// Determine if ranking is possible
                     	if(supportLevellingPossibility()) { // check for support leveling cards
 
                     		console.log('AI support levelling phase');
@@ -6258,15 +6239,15 @@
 
                     		console.log('AI standard levelling phase');
 
-		                    //Remove force nerfs
-		                    restoreForce();
+    	                    //Remove force nerfs
+    	                    restoreForce();
 
-		                    levellingPhase = true;
-		                    currentPhase = 'levellingPhase';
+    	                    levellingPhase = true;
+    	                    currentPhase = 'levellingPhase';
 
-			                // Update and display phase guide
-			                guideInstruction = 'Levelling Caster...';
-			                updatePhaseGuide(guideInstruction,currentPhase);
+    		                // Update and display phase guide
+    		                guideInstruction = 'Levelling Caster...';
+    		                updatePhaseGuide(guideInstruction,currentPhase);
 
                     		var AIcasterNextRank = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .card-attributes').attr('data-rank-next'),
                     			AIcasterDiscipline = jQuery('[data-battle-field="ai-field"]').find('.in-play .card .card-attributes').attr('data-discipline');
@@ -6284,65 +6265,64 @@
 
                     		});
 
-			            	cardAperture = jQuery('.valid-for-selection.AIfocus');
-			                casterSelection = jQuery('.casterSelection');
-			                aiField = jQuery(aiHand).attr('data-field');
+    		            	cardAperture = jQuery('.valid-for-selection.AIfocus');
+    		                casterSelection = jQuery('.casterSelection');
+    		                aiField = jQuery(aiHand).attr('data-field');
 
-							setTimeout(function(){
+    						setTimeout(function(){
 
-								placeInPlay(casterSelection, aiField, cardAperture);
+    							placeInPlay(casterSelection, aiField, cardAperture);
 
-								// Delayed Upkeep
-								setTimeout(function(){
+    							// Delayed Upkeep
+    							setTimeout(function(){
 
-				                    levellingPhase = false;
-				                    formerPhase = 'levellingPhase';
+                                    // Construct player attributes
+                                    constructPlayerAttributes(true, true); // player, ai
 
-								},2000);
+                                    jQuery('.card-aperture').removeClass('tetherCard'); // remove card tether reference
+                                    jQuery('.card-aperture').removeClass('AIfocus'); // remove card card aperture reference
 
-							},1000);
+                                    // Reset hitpoint reversal reference
+                                    jQuery('[data-battle-field="'+aiField+'"]').find('.hitpoint-percentile').attr('data-revert-hitpoints','0');
 
-                    	} else { // rank promotion not possible, proceed to Support Phase
+                                    // Remove the activeCaster class on any caster cards lower down the stacking order (essential for Levelling Phases)
+                                    if(jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').length > 1) {
+                                        jQuery('[data-battle-field="'+aiField+'"] .in-play').find('.activeCaster').not(':last').removeClass('activeCaster');
+                                    }
 
-                    		console.log('AI support selection phase');
+    			                    levellingPhase = false;
+    			                    formerPhase = 'levellingPhase';
 
-							// AI support selection
-							setTimeout(function(){
-								AIsupportSelection(playerHand);
-							},1000);
+    			                    // Determine progression based on field conditions
+    			                    beforeSupportPhase();
 
-                    	}
+    							},2000);
 
-					} else if(playerTurn) {
+    						},1000);
 
-						switchActiveSessions(); // switch to player session
+                    	} else {
 
-	                    resourcePoolingPhase = false;
-	                    supportSelectionPhase = true; // start resource pooling phase and allow UI key navigation
-	                    formerPhase = 'resourcePoolingPhase';
-	                    currentPhase = 'supportSelectionPhase';
+                            // Determine progression based on field conditions
+                            beforeSupportPhase();
 
-	                    // Update phase indicator
-	                    updatePhaseIndicator();
+                        }
 
-	                    // Update and display phase guide
-	                    guideInstruction = 'Select a valid support card to place in play';
-	                    updatePhaseGuide(guideInstruction,currentPhase);
+                    },2000);
 
-	                    // Unmark valid selection options
-	                    unmarkValidSelections();
-
-	                    // Mark valid selection options
-	                    markValidSelections('support-card-type');
-
-					}
-
-				},2000);
+				},1000);
 
             }
 
             // AI Support Selection
             function AIsupportSelection(aiHand) {
+
+                // Delayed Upkeep
+                setTimeout(function(){
+
+                    // Construct player attributes
+                    constructPlayerAttributes(true, true); // player, ai
+
+                },2000);
 
             }
         </script>
@@ -8844,28 +8824,3 @@
         </style>
     </body>
 </html>
-<!--
-
-if(AIprocessing)
-
-2206 - drawphase: confirmation and caster selection
-
-3196 - NO BATTLE/AFTER LOSS: exiting out of player caster selection phase after player battle loss (!playerTurn)
-
-
-
-AIprocessing = true
-
-3235 - NO BATTLE/AFTER LOSS: exiting out of player levelling phase, AI hand preparation; must place caster into play
-
-2612 - turn outcome
-
-
-
-AIprocessing = false
-
-6076 - NO BATTLE/AFTER LOSS: allow player to place caster into play if none is present
-
-6146 - NO BATTLE/AFTER LOSS: AI has just placed caster back into play after loss (playerTurn)
-
--->
