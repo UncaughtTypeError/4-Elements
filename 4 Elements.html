@@ -1638,13 +1638,13 @@
 
                         discardCards(playerHand);
 
-                        if(playerTurn) {
+                        if(Player_Session) {
 
                             // Update and display phase guide
                             guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
                             updatePhaseGuide(guideInstruction,currentPhase);
 
-                        } else if(!playerTurn) {
+                        } else if(AI_Session) {
 
                             // Update and display phase guide
                             guideInstruction = 'Discarding Cards...';
@@ -1665,13 +1665,13 @@
 
                 discardCards(playerHand);
 
-                if(playerTurn) {
+                if(Player_Session) {
 
                     // Update and display phase guide
                     guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
                     updatePhaseGuide(guideInstruction,currentPhase);
 
-                } else if(!playerTurn) {
+                } else if(AI_Session) {
 
                     // Update and display phase guide
                     guideInstruction = 'Discarding Cards...';
@@ -1800,13 +1800,13 @@
                     // discard current hand
                     discardCards(playerHand);
 
-                    if(playerTurn) {
+                    if(Player_Session) {
 
                         // Update and display phase guide
                         guideInstruction = 'Discarding Cards...<br> <small>A new hand will be drawn</small>';
                         updatePhaseGuide(guideInstruction,currentPhase);
 
-                    } else if(!playerTurn) {
+                    } else if(AI_Session) {
 
                         // Update and display phase guide
                         guideInstruction = 'Discarding Cards...';
@@ -1924,13 +1924,13 @@
 
                 if(cardsInStandbyDeck) {
 
-                    if(playerTurn) {
+                    if(Player_Session) {
 
                         // Update and display phase guide
                         guideInstruction = 'Drawing Cards...<br> <small>Accept, reject or browse hand drawn.</small>';
                         updatePhaseGuide(guideInstruction,currentPhase);
 
-                    } else if(!playerTurn) {
+                    } else if(AI_Session) {
 
                         // Update and display phase guide
                         guideInstruction = 'Drawing Cards...';
@@ -1963,7 +1963,7 @@
                         cardApertureHeight;
 
                     // Draw cards
-                    jQuery(playerTurn ? jQuery(playerHand).find('.card-aperture.open').get().reverse() : jQuery(playerHand).find('.card-aperture.open')).each(function(i){
+                    jQuery(Player_Session ? jQuery(playerHand).find('.card-aperture.open').get().reverse() : jQuery(playerHand).find('.card-aperture.open')).each(function(i){
 
                         let current_aperture = jQuery(this);
 
@@ -2524,12 +2524,12 @@
                 if (playerTurn) {
                     dialogueBoxContent =    `<div class="turn-result">
                                                 1<sup>st</sup> Draw
-                                                <div class="turn-order">You draw first</div>
+                                                <div class="turn-order">You draw first & attack second</div>
                                             </div>`;
                 } else {
                     dialogueBoxContent =    `<div class="turn-result">
                                                 2<sup>nd</sup> Draw
-                                                <div class="turn-order">You draw second</div>
+                                                <div class="turn-order">You draw second & attack first</div>
                                             </div>`;
                 }
                 if(jQuery('.dialogueBox .dialogueBox-body').children().length === 0) { // prevent additional prepending by excessive user input
@@ -3078,7 +3078,7 @@
 
                     setTimeout(function(){
 
-                    	// Determine progression based field conditions
+                    	// Determine progression based on field conditions
                     	beforeSupportPhase();
 
 		            },500);
@@ -3095,8 +3095,10 @@
 
                     setTimeout(function(){
 
-	                    if(formerPhase == 'casterSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0 || 
-	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0) {
+	                    //if(formerPhase == 'casterSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0 || 
+	                    	//formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length <= 0) {
+                        if(formerPhase == 'casterSelectionPhase' && !attributesPlayer.hasCasterInPlay || 
+                            formerPhase == 'previewSelectionPhase' && !attributesPlayer.hasCasterInPlay) {
 
 		                    casterConfirmationPhase = false; // disallow UI key navigation
 		                    casterSelectionPhase = true; // start caster selection phase and allow UI key navigation
@@ -3116,8 +3118,10 @@
 		                    // Mark valid selection options
 		                    markValidSelections('caster-card-type');
 
-		                } else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0 || 
-	                    	formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0) {
+		                //} else if(formerPhase == 'levellingPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0 || 
+	                    	//formerPhase == 'previewSelectionPhase' && jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card').length > 0) {
+                        } else if(formerPhase == 'casterSelectionPhase' && attributesPlayer.hasCasterInPlay || 
+                            formerPhase == 'previewSelectionPhase' && attributesPlayer.hasCasterInPlay) {
 
 		                    casterConfirmationPhase = false; // disallow UI key navigation
 		                    levellingPhase = true; // start levelling phase and allow UI key navigation
@@ -3289,14 +3293,14 @@
 
             /*
             **
-            ** After Caster Selection Phase
+            ** Before Support Selection Phase
             **
             */
 
             // Determine progression based on field conditions
             function beforeSupportPhase() {
 
-                if(playerTurn) {
+                if(Player_Session) {
 
                     if(!attributesPlayer.isLevelledCaster) { // ...caster selection or resource pooling phase has just occurred
 
@@ -3350,7 +3354,7 @@
 
                     }
                                             
-                } else if(!playerTurn) {
+                } else if(AI_Session) {
 
                     if(!attributesAI.isLevelledCaster) { // ...caster selection or resource pooling phase has just occurred
 
@@ -3800,7 +3804,7 @@
 
                         setTimeout(function(){
 
-                            // Determine progression based field conditions
+                            // Determine progression based on field conditions
                             beforeSupportPhase();
 
                         },500);
