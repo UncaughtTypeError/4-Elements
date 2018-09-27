@@ -3088,8 +3088,8 @@
                     toggleDialogueBox(false,true);
 
                     cardAperture = jQuery('.tetherCard');
-                    casterSelection = jQuery('.in-play').find('.activeCaster').last().addClass('returnSelection');
                     playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+                    casterSelection = jQuery('[data-battle-field="'+playerField+'"] .in-play').find('.activeCaster').last().addClass('returnSelection');
 
                     removeFromPlay(casterSelection, playerField, cardAperture);
 
@@ -3816,8 +3816,8 @@
                     toggleDialogueBox(false,true);
 
                     cardAperture = jQuery('.tetherCard');
-                    resourceSelection = jQuery('.resource').find('.activeResource');
                     playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+                    resourceSelection = jQuery('[data-resource-field="'+playerField+'"] .resource').find('.activeResource');
 
                     removeFromPool(resourceSelection, playerField, cardAperture);
 
@@ -4377,8 +4377,8 @@
                     toggleDialogueBox(false,true);
 
                     cardAperture = jQuery('.tetherCard');
-                    supportSelection = jQuery('.activeSupportAperture').find('.activeSupport');
                     playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+                    supportSelection = jQuery('[data-battle-field="'+playerField+'"] .activeSupportAperture').find('.activeSupport');
 
 					// Determine correct support phase to revert to
                     var supportTypeCheck;
@@ -4553,7 +4553,7 @@
             	resourceAdjustmentIteration = 0;	// iteration counter for visual adjustments to pool totals
 
             // Calculate and debit resource transactions for support and levelling costs
-            function resourceTransaction(phase) 
+            function resourceTransaction(phase) {
 
                 if(Player_Session) { 
 
