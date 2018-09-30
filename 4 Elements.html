@@ -321,10 +321,17 @@
             		AI_Session = false;
             		Player_Session = true;
 
+                    jQuery('[data-field="ai-field"] .player-hand').removeClass('activeHand');
+                    jQuery('[data-field="player-field"] .player-hand').addClass('activeHand');
+
             	} else if(Player_Session) {
 
             		Player_Session = false;
             		AI_Session = true;
+
+                    jQuery('[data-field="player-field"] .player-hand').removeClass('activeHand');
+                    jQuery('[data-field="ai-field"] .player-hand').addClass('activeHand');
+
             	}
 
             }
@@ -338,6 +345,9 @@
 
             // Phase guide update
             function updatePhaseGuide(guideInstruction,phaseInstance) {
+
+                // Update phase guide positioning
+                switchPhaseGuidePositioning();
 
                 if(!phaseGuideNotice) {
 
@@ -356,10 +366,7 @@
 
                 } else if(phaseGuideNotice) { // if the phase guide already exists, clear it, dismiss it, delay it, then call it again
 
-                    phaseGuideNotice = false;
-
-                    jQuery('.phaseGuide').removeClass('active-phaseGuide').addClass('inactive-phaseGuide');
-                    jQuery('.phaseGuide-instruction').empty();
+                    dismissPhaseGuide();
 
                     setTimeout(function(){
 
@@ -393,6 +400,21 @@
 
                 jQuery('.phaseGuide').removeClass('active-phaseGuide').addClass('inactive-phaseGuide');
                 jQuery('.phaseGuide-instruction').empty();
+
+            }
+
+            // Switch phase guide positioning
+            function switchPhaseGuidePositioning() {
+
+                if(Player_Session) {
+
+                    jQuery('.phaseGuide').removeClass('phaseGuide-topLeft').addClass('phaseGuide-bottomRight');
+
+                } else if(AI_Session) {
+
+                    jQuery('.phaseGuide').removeClass('phaseGuide-bottomRight').addClass('phaseGuide-topLeft');
+
+                }
 
             }
 
@@ -2603,7 +2625,15 @@
             // Mark valid selections
             function markValidSelections(validType) {
 
-                playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+                if(Player_Session) {
+
+                    playerField = 'player-field';
+
+                } else if(AI_Session) {
+
+                    playerField = 'ai-field';
+
+                }
 
                 jQuery('[data-field="'+playerField+'"] .card-aperture').each(function(){
 
@@ -2628,7 +2658,15 @@
             // Unmark valid selections
             function unmarkValidSelections() {
 
-                playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
+                if(Player_Session) {
+
+                    playerField = 'player-field';
+
+                } else if(AI_Session) {
+
+                    playerField = 'ai-field';
+
+                }
 
                 jQuery('[data-field="'+playerField+'"] .card-aperture').each(function(){
 
@@ -3401,6 +3439,8 @@
 
                     } else if(attributesAI.isLevelledCaster) { // ...levelling phase has just occurred
 
+                        console.log('ai levellingPhase');
+
                         // Debit resources after levelling
                         resourceTransaction('levellingPhase');
 
@@ -3635,6 +3675,11 @@
                         guideInstruction = 'Select a valid support card to place in play';
                         updatePhaseGuide(guideInstruction,currentPhase);
 
+                    } else if(AI_Session) {
+
+                        // Dismiss current phase guide
+                        dismissPhaseGuide();
+
                     }
 
                     // Unmark valid selection options
@@ -3642,6 +3687,9 @@
 
                     // Mark valid selection options
                     markValidSelections('support-card-type');
+
+                    // Prepare support card aperture
+                    enableSupportAperture();
 
                     if(AI_Session) {
 
@@ -4071,7 +4119,7 @@
 
                 // Determine if levelling support card is available to play
                 if(jQuery(playerHand).find('.player-hand .levelling-card-type').length) {
-                	// TODO : enter support levelling phase and allow the opportunity to play the support card (even if it's ineffective, player still has opportunity to 'discard' the card in this way)
+
                 	return true;
 
                 } else {
@@ -4276,6 +4324,24 @@
             **
             */
 
+            // Prepare support card aperture
+            function enableSupportAperture() {
+
+                if(Player_Session) {
+
+                    playerField = 'player-field';
+
+                } else if(AI_Session) {
+                    
+                    playerField = 'ai-field';
+
+                }
+
+                jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
+
+            }
+
+            // Select with keys
             function keySelectSupport() {
 
                 if(formerPhase == 'supportSelectionPhase' || formerPhase == 'supportLevellingPhase') {
@@ -4376,8 +4442,17 @@
 
                     toggleDialogueBox(false,true);
 
+                    if(Player_Session) {
+
+                        playerField = 'player-field';
+
+                    } else if(AI_Session) {
+                        
+                        playerField = 'ai-field';
+
+                    }
+
                     cardAperture = jQuery('.tetherCard');
-                    playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
                     supportSelection = jQuery('[data-battle-field="'+playerField+'"] .activeSupportAperture').find('.activeSupport');
 
 					// Determine correct support phase to revert to
@@ -4565,6 +4640,8 @@
 
                 }
 
+                console.log('playerField:',playerField);
+
             	if(phase == 'levellingPhase') {
 
             		// Determine cardCurrency by discipline type of caster card
@@ -4587,6 +4664,8 @@
 	            	}
 
 	            	cardCost = Number(jQuery('[data-battle-field="'+playerField+'"]').find('.in-play .card .levelling-cost').attr('data-levelling-cost'));
+
+                    console.log('cardCost:',cardCost);
 
 	            } else if(phase == 'supportLevellingPhase' || phase == 'supportSelectionPhase') {
 
@@ -4631,6 +4710,8 @@
                     var intervalID = setInterval(function(){
 
                        if(resourceAdjustmentIteration === cardCost) { // clear interval when iteration limit is reached
+
+                        console.log('cardCost: '+cardCost,'iterations adjustment: '+resourceAdjustmentIteration);
                           
                           clearInterval(intervalID);
 
@@ -4645,6 +4726,8 @@
 
                             jQuery('[data-resource-field="'+playerField+'"] '+cardCurrency).find('.resource-counter').text(resourcePoolTotal);
                             resourcePoolTotal-=1;
+
+                            console.log('resourcePoolTotal:',resourcePoolTotal);
 
                        }, 100);
 
@@ -5261,8 +5344,7 @@
 		                markValidSelections('levelling-card-type');
 
 		                // Prepare support card aperture
-		            	playerField = jQuery('.activeTurn').closest('.field').attr('data-field');
-		        		jQuery('[data-battle-field="'+playerField+'"]').find('.support-card-component').addClass('activeSupportAperture');
+		            	enableSupportAperture();
 
 		        	}
 
@@ -5288,7 +5370,7 @@
 		                    guideInstruction = 'Select a valid caster card to promote to';
 		                    updatePhaseGuide(guideInstruction,currentPhase);
 
-		                } else { // rank promotion not possible,
+		                } else { // rank promotion not possible, proceed to before support preparation
 
 		                }
 
@@ -7184,6 +7266,28 @@
             .active-phaseGuide {
                 left: 20px;
             }
+            .phaseGuide-topLeft {
+                top: 42px;
+                bottom: auto;
+                right: auto;
+            }
+            .phaseGuide-topLeft.inactive-phaseGuide {
+                left: -500px;
+            }
+            .phaseGuide-topLeft.active-phaseGuide {
+                left: 20px;
+            }
+            .phaseGuide-bottomRight {
+                bottom: 20px;
+                top: auto;
+                left: auto;
+            }
+            .phaseGuide-bottomRight.inactive-phaseGuide {
+                right: -500px;
+            }
+            .phaseGuide-bottomRight.active-phaseGuide {
+                right: 20px;
+            }
             .phaseGuide-current-phase {
                 font-size: 30px;
                 text-transform: capitalize;
@@ -7608,16 +7712,20 @@
             }
             .preview-pane-dismiss {
                 cursor: pointer;
-                color: #404040;
+                color: #b3b3b3;
                 position: absolute;
-                right: 100%;
+                right: 102%;
                 width: 25px;
                 height: 25px;
                 line-height: 25px;
                 transition: .5s;
+                background: #404040;
+                border-radius: 100%;
+                border-top-right-radius: 0;
             }
             .preview-pane-dismiss:hover {
-                color: #b3b3b3;
+                background: #b3b3b3;
+                color: #404040;
             }
             .preview-pane-aperture {
                 width: 250px;
@@ -8828,3 +8936,143 @@
         </style>
     </body>
 </html>
+<!--
+
+<div class="player-hand">
+                            <div class="card-aperture closed valid-for-selection focus"><div class="card clone-iteration-5" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="5" data-resource-currency="5"><div class="cardFront caster-card-type neophyte-ranking aero-motiv">
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">27</div>
+                                                            <div class="card-discipline">aero</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-cloud"></i></div>
+                                                            <div class="card-force-indicator">
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 37 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force">37</div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="neophyte" data-rank-next="proficient" data-force="37" data-cost="0" data-currency="5" data-discipline="aero">
+                                                            </div>
+                                                        </div></div></div>
+                            <div class="card-aperture closed valid-for-selection caster-nerfed"><div class="card clone-iteration-4" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="4" data-resource-currency="3"><div class="cardFront caster-card-type proficient-ranking terra-motiv">
+                                                            <div class="card-marker"><div class="card-force-fraction-deduction"><i class="fas fa-arrow-down"></i><span>½</span></div><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">25</div>
+                                                            <div class="card-discipline">terra</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-leaf"></i></div>
+                                                            <div class="card-force-indicator"><svg viewBox="0 0 32 32" class="natural-force">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 78 100;"></circle>
+                                                                </svg>
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 39, 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force card-force-nerfed"><div class="card-force-nerf"><strike>78</strike><span>39<i class="fas fa-level-down-alt"></i></span></div></div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"><i class="fas fa-star"></i></div>
+                                                            <div class="card-levelling-cost"><div class="levelling-cost" data-levelling-cost="3">
+                                                <i class="fas fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                                <i class="far fa-circle"></i>
+                                            </div></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="proficient" data-rank-next="adept" data-force="78" data-cost="3" data-currency="3" data-discipline="terra">
+                                                            </div>
+                                                        </div></div></div>
+                            <div class="card-aperture closed valid-for-selection"><div class="card clone-iteration-3" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="3" data-resource-currency="4"><div class="cardFront caster-card-type neophyte-ranking terra-motiv">
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">55</div>
+                                                            <div class="card-discipline">terra</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-leaf"></i></div>
+                                                            <div class="card-force-indicator">
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 61 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force">61</div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="neophyte" data-rank-next="proficient" data-force="61" data-cost="0" data-currency="4" data-discipline="terra">
+                                                            </div>
+                                                        </div></div></div>
+                            <div class="card-aperture closed valid-for-selection"><div class="card clone-iteration-2" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="2" data-resource-currency="4"><div class="cardFront caster-card-type neophyte-ranking hydro-motiv">
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">48</div>
+                                                            <div class="card-discipline">hydro</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-tint"></i></div>
+                                                            <div class="card-force-indicator">
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 56 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force">56</div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="neophyte" data-rank-next="proficient" data-force="56" data-cost="0" data-currency="4" data-discipline="hydro">
+                                                            </div>
+                                                        </div></div></div>
+                            <div class="card-aperture closed valid-for-selection"><div class="card clone-iteration-1" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="1" data-resource-currency="4"><div class="cardFront caster-card-type neophyte-ranking terra-motiv">
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">19</div>
+                                                            <div class="card-discipline">terra</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-leaf"></i></div>
+                                                            <div class="card-force-indicator">
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 61 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force">61</div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="neophyte" data-rank-next="proficient" data-force="61" data-cost="0" data-currency="4" data-discipline="terra">
+                                                            </div>
+                                                        </div></div></div>
+                            <div class="card-aperture closed valid-for-selection"><div class="card clone-iteration-0" style="position: absolute; top: 0px; left: 0px; height: 250px; width: 150px; z-index: 9;" data-iteration="0" data-resource-currency="4"><div class="cardFront caster-card-type neophyte-ranking pyro-motiv">
+                                                            <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                                                            <div class="card-number">46</div>
+                                                            <div class="card-discipline">pyro</div>
+                                                            <div class="card-resource-currency"><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i><i class="fas fa-circle"></i></div>
+                                                            <div class="card-elemental-motif"><i class="fas fa-burn"></i></div>
+                                                            <div class="card-force-indicator">
+                                                                <svg viewBox="0 0 32 32">
+                                                                  <circle r="16" cx="16" cy="16" style="stroke-dasharray: 53 100;"></circle>
+                                                                </svg>
+                                                                <div class="elite-force-indicator"></div>
+                                                                <div class="adept-force-indicator"></div>
+                                                                <div class="proficient-force-indicator"></div>
+                                                            </div>
+                                                            <div class="card-force">53</div>
+                                                            <div class="card-type">Caster</div>
+                                                            <div class="card-ranking"></div>
+                                                            <div class="card-levelling-cost"></div>
+                                                            <div class="card-attributes" data-type="Caster" data-rank="neophyte" data-rank-next="proficient" data-force="53" data-cost="0" data-currency="4" data-discipline="pyro">
+                                                            </div>
+                                                        </div></div></div>
+                        </div>
+
+-->
