@@ -1,0 +1,35 @@
+{
+  "name": "4-elements",
+  "version": "1.0.0",
+  "description": "A browser turn based battle card game",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UncaughtTypeError/4-Elements.git"
+  },
+  "author": "Nathan Shepherd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UncaughtTypeError/4-Elements/issues"
+  },
+  "homepage": "https://github.com/UncaughtTypeError/4-Elements#readme",
+  "devDependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "index.js",
+      "src/"
+    ],
+    "ext": "js,json",
+    "ignore": [
+      "node_modules/"
+    ]
+  }
+}

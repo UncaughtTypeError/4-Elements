@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>4 Elements</title>
+        <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+        <script src="scripts.js" defer></script>
+        <link rel="stylesheet" href="/styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v6.7.2/css/all.css"
+            crossorigin="anonymous"
+        />
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="alert-component">
+                <!-- epheremal alert and notice display -->
+            </div>
+            <div class="overview-component">
+                <div class="overview-deck-details"></div>
+                <div class="overview-win-indicator">
+                    <div class="overview-player-win">0</div>
+                    <div class="npc-player-win">0</div>
+                </div>
+                <div class="overview-phase-indicator">
+                    <div
+                        class="overview-current-phase overview-display-phase"
+                    ></div>
+                </div>
+            </div>
+            <div class="turnCard-component">
+                <div class="turnCard-bg-lines">
+                    <div><div></div></div>
+                </div>
+                <div class="turnCard-match"></div>
+                <div class="turnCard-selection"></div>
+            </div>
+            <div class="phaseGuide-component">
+                <div class="phaseGuide inactive-phaseGuide">
+                    <div class="phaseGuide-current-phase"></div>
+                    <div class="phaseGuide-instruction"></div>
+                </div>
+            </div>
+            <div class="field-component">
+                <div class="field" data-field="ai-field">
+                    <div class="preview-pane-component">
+                        <div class="preview-pane-aperture">
+                            <div class="preview-pane-dismiss">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="preview-pane-card"></div>
+                        </div>
+                        <div class="preview-pane-aperture">
+                            <div class="preview-pane-stats"></div>
+                        </div>
+                    </div>
+                    <div class="deck-component">
+                        <div class="victory-indicator">
+                            <div class="victory-aperture"></div>
+                            <div class="victory-aperture"></div>
+                            <div class="victory-aperture"></div>
+                        </div>
+                        <div class="player-hand">
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                        </div>
+                        <div class="dorment">
+                            <div class="turn-indicator"></div>
+                            <div class="stack-counter">
+                                <span></span>
+                                <div class="stack-circuit"></div>
+                            </div>
+                            <div class="standby-pile"></div>
+                            <div class="dead-pile"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="battle-field-component">
+                    <div class="battle-field-background">
+                        <div class="background-panel-left background-panel">
+                            <div class="panel-corner"></div>
+                            <div class="panel-corner"></div>
+                        </div>
+                        <div class="background-panel-right background-panel">
+                            <div class="panel-corner"></div>
+                            <div class="panel-corner"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="resource-field-component"
+                        data-resource-field="player-field"
+                    >
+                        <div class="resource resource-pyro">
+                            <i class="fas fa-fire"></i>
+                            <div class="resource-aperture"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-added-value"></div>
+                        </div>
+                        <div class="resource resource-terra">
+                            <i class="fas fa-mountain"></i>
+                            <div class="resource-aperture"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-added-value"></div>
+                        </div>
+                        <div class="resource resource-aero">
+                            <i class="fas fa-cloud-bolt"></i>
+                            <div class="resource-aperture"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-added-value"></div>
+                        </div>
+                        <div class="resource resource-hydro">
+                            <i class="fas fa-droplet"></i>
+                            <div class="resource-aperture"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-added-value"></div>
+                        </div>
+                    </div>
+                    <div class="battle-field" data-battle-field="player-field">
+                        <div class="hitpoint-component">
+                            <div class="hitpoint-percentile"></div>
+                            <div class="hitpoint-indicator">
+                                <div class="hitpoint-circuit"></div>
+                                <div class="hitpoint-meter safe">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="hitpoint-meter caution">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="hitpoint-meter risk">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="in-play"></div>
+                        <div class="support-card-component">
+                            <div class="support-card-circuit"></div>
+                        </div>
+                    </div>
+                    <div class="battle-field" data-battle-field="ai-field">
+                        <div class="support-card-component">
+                            <div class="support-card-circuit"></div>
+                        </div>
+                        <div class="in-play"></div>
+                        <div class="hitpoint-component">
+                            <div class="hitpoint-percentile"></div>
+                            <div class="hitpoint-indicator">
+                                <div class="hitpoint-circuit"></div>
+                                <div class="hitpoint-meter safe">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="hitpoint-meter caution">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="hitpoint-meter risk">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="resource-field-component"
+                        data-resource-field="ai-field"
+                    >
+                        <div class="resource resource-hydro">
+                            <div class="resource-added-value"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-aperture"></div>
+                            <i class="fas fa-droplet"></i>
+                        </div>
+                        <div class="resource resource-aero">
+                            <div class="resource-added-value"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-aperture"></div>
+                            <i class="fas fa-cloud-bolt"></i>
+                        </div>
+                        <div class="resource resource-terra">
+                            <div class="resource-added-value"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-aperture"></div>
+                            <i class="fas fa-mountain"></i>
+                        </div>
+                        <div class="resource resource-pyro">
+                            <div class="resource-added-value"></div>
+                            <div class="resource-counter" data-pool-wealth="0">
+                                0
+                            </div>
+                            <div class="resource-aperture"></div>
+                            <i class="fas fa-fire"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="field" data-field="player-field">
+                    <div class="deck-component">
+                        <div class="victory-indicator">
+                            <div class="victory-aperture"></div>
+                            <div class="victory-aperture"></div>
+                            <div class="victory-aperture"></div>
+                        </div>
+                        <div class="player-hand">
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                            <div class="card-aperture open"></div>
+                        </div>
+                        <div class="dorment">
+                            <div class="dead-pile"></div>
+                            <div class="standby-pile"></div>
+                            <div class="stack-counter">
+                                <span></span>
+                                <div class="stack-circuit"></div>
+                            </div>
+                            <div class="turn-indicator"></div>
+                        </div>
+                    </div>
+                    <div class="preview-pane-component">
+                        <div class="preview-pane-aperture">
+                            <div class="preview-pane-dismiss">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="preview-pane-card"></div>
+                        </div>
+                        <div class="preview-pane-aperture">
+                            <div class="preview-pane-stats"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+<style>
+    .demo-rack {
+        text-align: center;
+        display: block;
+        padding-block: 150px;
+        position: relative;
+        background: #7d7d7d;
+    }
+    .demo-rack:before {
+        content: 'Demo Rack';
+        position: fixed;
+        left: 0;
+        right: 0;
+        text-align: center;
+        bottom: 50%;
+        font-size: 30px;
+        color: #404040;
+        opacity: .5;
+    }
+</style>
+<div class="player-hand demo-rack" style="display: none;">
+    <div class="card-aperture closed valid-for-selection focus">
+        <div
+            class="card clone-iteration-5"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="5"
+            data-resource-currency="5"
+        >
+            <div class="cardFront caster-card-type neophyte-ranking aero-motiv">
+                <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                <div class="card-number">27</div>
+                <div class="card-discipline">aero</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-cloud-bolt"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 37 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force">37</div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"></div>
+                <div class="card-levelling-cost"></div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="neophyte"
+                    data-rank-next="proficient"
+                    data-force="37"
+                    data-cost="0"
+                    data-currency="5"
+                    data-discipline="aero"
+                ></div>
+            </div>
+        </div>
+    </div>
+    <div class="card-aperture closed valid-for-selection caster-nerfed">
+        <div
+            class="card clone-iteration-4"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="4"
+            data-resource-currency="3"
+        >
+            <div
+                class="cardFront caster-card-type proficient-ranking terra-motiv"
+            >
+                <div class="card-marker">
+                    <div class="card-force-fraction-deduction">
+                        <i class="fas fa-arrow-down"></i><span>½</span>
+                    </div>
+                    <i class="fas fa-check"></i>Valid
+                </div>
+                <div class="card-number">25</div>
+                <div class="card-discipline">terra</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32" class="natural-force">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 78 100"
+                        ></circle>
+                    </svg>
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 39, 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force card-force-nerfed">
+                    <div class="card-force-nerf">
+                        <strike>78</strike
+                        ><span>39<i class="fas fa-arrow-turn-down"></i></span>
+                    </div>
+                </div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"><i class="fas fa-star"></i></div>
+                <div class="card-levelling-cost">
+                    <div class="levelling-cost" data-levelling-cost="3">
+                        <i class="fas fa-circle"></i>
+                        <i class="far fa-circle"></i>
+                        <i class="far fa-circle"></i>
+                        <i class="far fa-circle"></i>
+                        <i class="far fa-circle"></i>
+                    </div>
+                </div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="proficient"
+                    data-rank-next="adept"
+                    data-force="78"
+                    data-cost="3"
+                    data-currency="3"
+                    data-discipline="terra"
+                ></div>
+            </div>
+        </div>
+    </div>
+    <div class="card-aperture closed valid-for-selection">
+        <div
+            class="card clone-iteration-3"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="3"
+            data-resource-currency="4"
+        >
+            <div
+                class="cardFront caster-card-type neophyte-ranking terra-motiv"
+            >
+                <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                <div class="card-number">55</div>
+                <div class="card-discipline">terra</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 61 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force">61</div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"></div>
+                <div class="card-levelling-cost"></div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="neophyte"
+                    data-rank-next="proficient"
+                    data-force="61"
+                    data-cost="0"
+                    data-currency="4"
+                    data-discipline="terra"
+                ></div>
+            </div>
+        </div>
+    </div>
+    <div class="card-aperture closed valid-for-selection">
+        <div
+            class="card clone-iteration-2"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="2"
+            data-resource-currency="4"
+        >
+            <div
+                class="cardFront caster-card-type neophyte-ranking hydro-motiv"
+            >
+                <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                <div class="card-number">48</div>
+                <div class="card-discipline">hydro</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 56 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force">56</div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"></div>
+                <div class="card-levelling-cost"></div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="neophyte"
+                    data-rank-next="proficient"
+                    data-force="56"
+                    data-cost="0"
+                    data-currency="4"
+                    data-discipline="hydro"
+                ></div>
+            </div>
+        </div>
+    </div>
+    <div class="card-aperture closed valid-for-selection">
+        <div
+            class="card clone-iteration-1"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="1"
+            data-resource-currency="4"
+        >
+            <div
+                class="cardFront caster-card-type neophyte-ranking terra-motiv"
+            >
+                <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                <div class="card-number">19</div>
+                <div class="card-discipline">terra</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 61 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force">61</div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"></div>
+                <div class="card-levelling-cost"></div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="neophyte"
+                    data-rank-next="proficient"
+                    data-force="61"
+                    data-cost="0"
+                    data-currency="4"
+                    data-discipline="terra"
+                ></div>
+            </div>
+        </div>
+    </div>
+    <div class="card-aperture closed valid-for-selection">
+        <div
+            class="card clone-iteration-0"
+            style="
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 250px;
+                width: 150px;
+                z-index: 9;
+            "
+            data-iteration="0"
+            data-resource-currency="4"
+        >
+            <div class="cardFront caster-card-type neophyte-ranking pyro-motiv">
+                <div class="card-marker"><i class="fas fa-check"></i>Valid</div>
+                <div class="card-number">46</div>
+                <div class="card-discipline">pyro</div>
+                <div class="card-resource-currency">
+                    <i class="fas fa-circle"></i><i class="fas fa-circle"></i
+                    ><i class="fas fa-circle"></i><i class="fas fa-circle"></i>
+                </div>
+                <div class="card-elemental-motif">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="card-force-indicator">
+                    <svg viewBox="0 0 32 32">
+                        <circle
+                            r="16"
+                            cx="16"
+                            cy="16"
+                            style="stroke-dasharray: 53 100"
+                        ></circle>
+                    </svg>
+                    <div class="elite-force-indicator"></div>
+                    <div class="adept-force-indicator"></div>
+                    <div class="proficient-force-indicator"></div>
+                </div>
+                <div class="card-force">53</div>
+                <div class="card-type">Caster</div>
+                <div class="card-ranking"></div>
+                <div class="card-levelling-cost"></div>
+                <div
+                    class="card-attributes"
+                    data-type="Caster"
+                    data-rank="neophyte"
+                    data-rank-next="proficient"
+                    data-force="53"
+                    data-cost="0"
+                    data-currency="4"
+                    data-discipline="pyro"
+                ></div>
+            </div>
+        </div>
+    </div>
+</div>
