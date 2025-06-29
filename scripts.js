@@ -5324,15 +5324,15 @@ function browseAndPreview() {
             .hasClass('caster-card-type')
     ) {
         jQuery('.preview-pane-stats').prepend(`<div class="stat-force">
-                                                          <div class="stat-title">Force:</div>
-                                                          <div class="stat-value">${previewForce}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Force:</div>
+                                                <div class="stat-value">${previewForce}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats')
             .prepend(`<div class="stat-resource-currency">
-                                                          <div class="stat-title">Reource Value:</div>
-                                                          <div class="stat-value">+${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
-                                                      </div>`);
+                        <div class="stat-title">Reource Value:</div>
+                        <div class="stat-value">+${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
+                    </div>`);
 
         if (
             !jQuery(browsingSelection)
@@ -5341,9 +5341,9 @@ function browseAndPreview() {
         ) {
             jQuery('.preview-pane-stats')
                 .prepend(`<div class="stat-resource-cost">
-                                                              <div class="stat-title">Levelling Cost:</div>
-                                                              <div class="stat-value">${previewLevellingCost}${previewLevellingCostHTML}</div>
-                                                          </div>`);
+                            <div class="stat-title">Levelling Cost:</div>
+                            <div class="stat-value">${previewLevellingCost}${previewLevellingCostHTML}</div>
+                        </div>`);
         }
     } else if (
         jQuery(browsingSelection)
@@ -5351,27 +5351,27 @@ function browseAndPreview() {
             .hasClass('support-card-type')
     ) {
         jQuery('.preview-pane-stats').prepend(`<div class="stat-description">
-                                                          <div class="stat-title">Description:</div>
-                                                          <div class="stat-value">${previewDescription}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Description:</div>
+                                                <div class="stat-value">${previewDescription}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats').prepend(`<div class="stat-appellation">
-                                                          <div class="stat-title">Title:</div>
-                                                          <div class="stat-value">${previewAppellation}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Title:</div>
+                                                <div class="stat-value">${previewAppellation}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats').prepend(`<div class="stat-resource-cost">
-                                                          <div class="stat-title">Resource Cost:</div>
-                                                          <div class="stat-value">${previewResourceCost}${previewResourceCostHTML}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Resource Cost:</div>
+                                                <div class="stat-value">${previewResourceCost}${previewResourceCostHTML}</div>
+                                            </div>`);
     }
 
     switch (previewDiscipline) {
         case 'aero':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-cloud-bolt"></i> Aerolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-cloud-bolt"></i> Aerolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5387,9 +5387,9 @@ function browseAndPreview() {
 
         case 'terra':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-mountain"></i> Terralurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-mountain"></i> Terralurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5405,9 +5405,9 @@ function browseAndPreview() {
 
         case 'pyro':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-fire"></i> Pyrolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-fire"></i> Pyrolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5423,9 +5423,9 @@ function browseAndPreview() {
 
         case 'hydro':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-droplet"></i> Hydrolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-droplet"></i> Hydrolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5443,37 +5443,37 @@ function browseAndPreview() {
     switch (previewRank) {
         case 0:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Neophyte</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Neophyte</div>
+                                                </div>`);
             break;
 
         case 1:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Proficient</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Proficient</div>
+                                                </div>`);
             break;
 
         case 2:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Adept</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Adept</div>
+                                                </div>`);
             break;
 
         case 3:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Elite</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Elite</div>
+                                                </div>`);
             break;
 
         case 4:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Peerless</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Peerless</div>
+                                                </div>`);
             break;
     }
 }
