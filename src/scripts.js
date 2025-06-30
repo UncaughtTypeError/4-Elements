@@ -1069,12 +1069,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="20">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1112,12 +1112,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="10">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1158,12 +1158,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="5">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1204,12 +1204,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="3">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1389,12 +1389,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="5">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1421,12 +1421,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="4">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1453,12 +1453,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="3">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1483,12 +1483,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="2">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1510,12 +1510,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="1">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -4092,6 +4092,12 @@ function placeInPool(resourceSelection, playerField, cardAperture) {
     // Generify elemental motif
     jQuery('.activeResource')
         .find('.card-elemental-motif .fas')
+        .removeClass(function (index, className) {
+            return className
+                .split(' ')
+                .filter((c) => c.includes('fa-'))
+                .join(' ');
+        })
         .addClass('fa-circle'); // overwrite specific motiv
 
     // Remove resource tag
@@ -4183,6 +4189,22 @@ function removeFromPool(resourceSelection, playerField, cardAperture) {
     // Specify elemental motif
     jQuery('.activeResource')
         .find('.card-elemental-motif .fas')
+        .addClass(function (index, className) {
+            const discipline = jQuery(this)
+                .parent()
+                .siblings('.card-attributes')
+                .attr('data-discipline');
+            switch (discipline) {
+                case 'terra':
+                    return 'fa-mountain';
+                case 'aero':
+                    return 'fa-cloud-bolt';
+                case 'hydro':
+                    return 'fa-droplet';
+                case 'pyro':
+                    return 'fa-fire';
+            }
+        })
         .removeClass('fa-circle'); // fallback to specific motiv
 
     // Placing card
@@ -5324,15 +5346,15 @@ function browseAndPreview() {
             .hasClass('caster-card-type')
     ) {
         jQuery('.preview-pane-stats').prepend(`<div class="stat-force">
-                                                          <div class="stat-title">Force:</div>
-                                                          <div class="stat-value">${previewForce}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Force:</div>
+                                                <div class="stat-value">${previewForce}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats')
             .prepend(`<div class="stat-resource-currency">
-                                                          <div class="stat-title">Reource Value:</div>
-                                                          <div class="stat-value">+${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
-                                                      </div>`);
+                        <div class="stat-title">Reource Value:</div>
+                        <div class="stat-value">+${previewResourceCurrency}${previewResourceCurrencyHTML}</div>
+                    </div>`);
 
         if (
             !jQuery(browsingSelection)
@@ -5341,9 +5363,9 @@ function browseAndPreview() {
         ) {
             jQuery('.preview-pane-stats')
                 .prepend(`<div class="stat-resource-cost">
-                                                              <div class="stat-title">Levelling Cost:</div>
-                                                              <div class="stat-value">${previewLevellingCost}${previewLevellingCostHTML}</div>
-                                                          </div>`);
+                            <div class="stat-title">Levelling Cost:</div>
+                            <div class="stat-value">${previewLevellingCost}${previewLevellingCostHTML}</div>
+                        </div>`);
         }
     } else if (
         jQuery(browsingSelection)
@@ -5351,27 +5373,27 @@ function browseAndPreview() {
             .hasClass('support-card-type')
     ) {
         jQuery('.preview-pane-stats').prepend(`<div class="stat-description">
-                                                          <div class="stat-title">Description:</div>
-                                                          <div class="stat-value">${previewDescription}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Description:</div>
+                                                <div class="stat-value">${previewDescription}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats').prepend(`<div class="stat-appellation">
-                                                          <div class="stat-title">Title:</div>
-                                                          <div class="stat-value">${previewAppellation}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Title:</div>
+                                                <div class="stat-value">${previewAppellation}</div>
+                                            </div>`);
 
         jQuery('.preview-pane-stats').prepend(`<div class="stat-resource-cost">
-                                                          <div class="stat-title">Resource Cost:</div>
-                                                          <div class="stat-value">${previewResourceCost}${previewResourceCostHTML}</div>
-                                                      </div>`);
+                                                <div class="stat-title">Resource Cost:</div>
+                                                <div class="stat-value">${previewResourceCost}${previewResourceCostHTML}</div>
+                                            </div>`);
     }
 
     switch (previewDiscipline) {
         case 'aero':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-cloud-bolt"></i> Aerolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-cloud-bolt"></i> Aerolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5387,9 +5409,9 @@ function browseAndPreview() {
 
         case 'terra':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-mountain"></i> Terralurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-mountain"></i> Terralurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5405,9 +5427,9 @@ function browseAndPreview() {
 
         case 'pyro':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-fire"></i> Pyrolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-fire"></i> Pyrolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5423,9 +5445,9 @@ function browseAndPreview() {
 
         case 'hydro':
             jQuery('.preview-pane-stats').prepend(`<div class="stat-discipline">
-                                                              <div class="stat-title">Discipline:</div>
-                                                              <div class="stat-value"><i class="fas fa-droplet"></i> Hydrolurgy</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Discipline:</div>
+                                                    <div class="stat-value"><i class="fas fa-droplet"></i> Hydrolurgy</div>
+                                                </div>`);
 
             // Handle classes
             jQuery('.preview-pane-stats').removeClass(function (
@@ -5443,37 +5465,37 @@ function browseAndPreview() {
     switch (previewRank) {
         case 0:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Neophyte</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Neophyte</div>
+                                                </div>`);
             break;
 
         case 1:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Proficient</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Proficient</div>
+                                                </div>`);
             break;
 
         case 2:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Adept</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Adept</div>
+                                                </div>`);
             break;
 
         case 3:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Elite</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Elite</div>
+                                                </div>`);
             break;
 
         case 4:
             jQuery('.preview-pane-stats').prepend(`<div class="stat-rank">
-                                                              <div class="stat-title">Ranking:</div>
-                                                              <div class="stat-value">Peerless</div>
-                                                          </div>`);
+                                                    <div class="stat-title">Ranking:</div>
+                                                    <div class="stat-value">Peerless</div>
+                                                </div>`);
             break;
     }
 }
