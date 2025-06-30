@@ -1069,12 +1069,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="20">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1112,12 +1112,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="10">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1158,12 +1158,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="5">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1204,12 +1204,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-levelling-cost')
                             .prepend(
                                 `<div class="levelling-cost" data-levelling-cost="3">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Resource Currency
@@ -1389,12 +1389,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="5">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1421,12 +1421,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="4">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1453,12 +1453,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="3">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1483,12 +1483,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="2">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -1510,12 +1510,12 @@ function revealDrawnCard(drawnCard, clonedCard, cardData) {
                             .find('.card-resource-cost')
                             .prepend(
                                 `<div class="resource-cost" data-resource-cost="1">
-                                          <i class="fas fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                          <i class="far fa-circle"></i>
-                                      </div>`
+                                    <i class="fas fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                    <i class="far fa-circle"></i>
+                                </div>`
                             );
 
                         // Update Support Cost attribute
@@ -4092,6 +4092,12 @@ function placeInPool(resourceSelection, playerField, cardAperture) {
     // Generify elemental motif
     jQuery('.activeResource')
         .find('.card-elemental-motif .fas')
+        .removeClass(function (index, className) {
+            return className
+                .split(' ')
+                .filter((c) => c.includes('fa-'))
+                .join(' ');
+        })
         .addClass('fa-circle'); // overwrite specific motiv
 
     // Remove resource tag
@@ -4183,6 +4189,22 @@ function removeFromPool(resourceSelection, playerField, cardAperture) {
     // Specify elemental motif
     jQuery('.activeResource')
         .find('.card-elemental-motif .fas')
+        .addClass(function (index, className) {
+            const discipline = jQuery(this)
+                .parent()
+                .siblings('.card-attributes')
+                .attr('data-discipline');
+            switch (discipline) {
+                case 'terra':
+                    return 'fa-mountain';
+                case 'aero':
+                    return 'fa-cloud-bolt';
+                case 'hydro':
+                    return 'fa-droplet';
+                case 'pyro':
+                    return 'fa-fire';
+            }
+        })
         .removeClass('fa-circle'); // fallback to specific motiv
 
     // Placing card
